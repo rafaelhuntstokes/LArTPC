@@ -3,4 +3,4 @@ A simulation of DUNE's far detector. This software package was created as part o
 
 The simulation outputs a set of supernova neutrino event images and images comprised only of noise. A convolutional neural network is used to investigate classification accuracy under a range of different conditions. 
 
-NOTE: the required GEANT4 data for the simulation, electron_data.npy, is too large to upload here. 
+NOTE: the required GEANT4 data for the simulation, electron_data.npy, is too large to upload here. A smaller subfile containing a few events will be uploaded shortly. 
