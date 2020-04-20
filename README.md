@@ -6,7 +6,6 @@ The simulation outputs a set of supernova neutrino event images and images compr
 *The Files* 
 1) simulation_tpc.py - the simulation code developed by me for the project that creates the TPC images
 2) model_utils.py    - code that creates CNN model and includes test/train/validation methods 
-3) run_model.py      - code uses CNN defined in model_utils.py and processes the output to create confusion matrices and graphs of     
-                       results. Allows specification of inputs to CNN. 
+3) run_model.py      - code uses CNN defined in model_utils.py and processes the output to create confusion matrices and graphs of        results. Allows specification of inputs to CNN. 
 
 NOTE: the required GEANT4 data for the simulation, electron_data.npy, is too large to upload here. A smaller subfile containing a few events will be uploaded shortly. 
