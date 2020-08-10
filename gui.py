@@ -39,13 +39,13 @@ class OpenerGUI():
         variableQ.grid(row = 0, column = 0, columnspan = 3)
 
         # radioselect variable  
-        selection = tk.StringVar()
-        selection.set("lifetime")
+        self.selection = tk.StringVar()
+        self.selection.set("lifetime")
 
         # radioselect buttons 
-        lifetimeBtn = tk.Radiobutton(window, variable = selection, value = "lifetime", text = "Lifetime")
-        elecNoiseBtn = tk.Radiobutton(window, variable = selection, value = "electronic", text = "Electronic Noise")
-        radioactivityBtn = tk.Radiobutton(window, variable = selection, value = "radioactive", text = "Radioactivity")
+        lifetimeBtn = tk.Radiobutton(window, variable = self.selection, value = "lifetime", text = "Lifetime")
+        elecNoiseBtn = tk.Radiobutton(window, variable = self.selection, value = "electronic", text = "Electronic Noise")
+        radioactivityBtn = tk.Radiobutton(window, variable = self.selection, value = "radioactive", text = "Radioactivity")
         lifetimeBtn.grid(row = 1, column = 0)
         elecNoiseBtn.grid(row = 1, column = 1)
         radioactivityBtn.grid(row = 1, column = 2)
