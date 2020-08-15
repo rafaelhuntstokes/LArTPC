@@ -1,5 +1,7 @@
 import tkinter as tk 
+from tkinter import messagebox
 import numpy as np 
+from PIL import ImageTk,Image
 
 class OpenerGUI():
     
@@ -10,17 +12,28 @@ class OpenerGUI():
         
         # title of window 
         window.title("DUNE LArTPC Simulator")
+        window.geometry("500x200")
 
         # label for choices
         self.question = tk.Label(window, text = "Do you want to create new or analyse existing data?")
-        self.question.grid(row = 0, column = 0, columnspan = 3)
-        
+        self.question.grid(row = 1, column = 0, columnspan = 4, sticky = "nswe")
+    
         # buttons corresponding to choices
         self.createBtn = tk.Button(window, text = "Create", command = self.createData)
         self.analyseBtn = tk.Button(window, text = "Analyse", command = self.analyseData)
-        self.createBtn.grid(row = 1, column = 0)
-        self.analyseBtn.grid(row = 1, column = 2)
-        
+        self.createBtn.grid(row = 2, column = 0, columnspan = 2, sticky ="nswe")
+        self.analyseBtn.grid(row = 2, column = 2, columnspan = 2, sticky ="nswe")
+
+        # cool graphics
+        self.canvas = tk.Canvas(window, width = 500, height = 10)
+        self.canvas.grid(row = 0, column = 0, columnspan = 4, sticky = "nswe")
+        self.img = ImageTk.PhotoImage(Image.open("sn1987a.jpg"))
+        self.canvas.create_image(100,35, anchor = "center", image = self.img)
+
+        # formatting, giving row weights allows rows to expand to fill space
+        window.grid_rowconfigure(0, weight=1)
+        window.grid_rowconfigure(1, weight=1)
+        window.grid_rowconfigure(2, weight=1)
 
     def createData(self):
         """
@@ -35,26 +48,50 @@ class OpenerGUI():
         self.analyseBtn.destroy()
 
         # text in window 
-        variableQ = tk.Label(window, text = "Please select Independent variable for dataset:")
-        variableQ.grid(row = 0, column = 0, columnspan = 3)
+        variableQ = tk.Label(window, text = "Select Independent Variable for Dataset")
+        variableQ.grid(row = 1, column = 0, columnspan = 5)
 
         # radioselect variable  
         self.selection = tk.StringVar()
         self.selection.set("lifetime")
 
         # radioselect buttons 
-        lifetimeBtn = tk.Radiobutton(window, variable = self.selection, value = "lifetime", text = "Lifetime")
-        elecNoiseBtn = tk.Radiobutton(window, variable = self.selection, value = "electronic", text = "Electronic Noise")
-        radioactivityBtn = tk.Radiobutton(window, variable = self.selection, value = "radioactive", text = "Radioactivity")
-        lifetimeBtn.grid(row = 1, column = 0)
-        elecNoiseBtn.grid(row = 1, column = 1)
-        radioactivityBtn.grid(row = 1, column = 2)
+        self.lifetimeBtn = tk.Radiobutton(window, variable = self.selection, value = "lifetime", text = "Lifetime")
+        self.elecNoiseBtn = tk.Radiobutton(window, variable = self.selection, value = "electronic", text = "Electronic Noise")
+        self.radioactivityBtn = tk.Radiobutton(window, variable = self.selection, value = "radioactive", text = "Radioactivity")
+        self.lifetimeBtn.grid(row = 2, column = 1)
+        self.elecNoiseBtn.grid(row = 2, column = 2)
+        self.radioactivityBtn.grid(row = 2, column = 3)
+
+        # create input fields for parameter space to be probed 
+        self.spaceFrame = tk.LabelFrame(window, text = "Input Parameter Space")
+        self.spaceFrame.grid(row = 3, column = 1)
+        
+        self.valuesLabel = tk.Label(self.spaceFrame, text = "Values:")
+        self.valuesLabel.grid(row = 0, column = 0)
+
+        self.vals = tk.StringVar()
+        self.valuesEntry = tk.Entry(self.spaceFrame, textvariable = self.vals)
+        self.valuesEntry.grid(row = 0, column = 1)
+
+        self.acceptBtn = tk.Button(self.spaceFrame, text = "Accept", command = self.getParameterSpace)
+        self.acceptBtn.grid(row = 1, column = 1)
 
         
-        
+    def getParameterSpace(self):
+        """
+        Function takes the user input to find the different values of independent variable to use when generating a new 
+        dataset. 
+        """
 
+        # get what input and convert to an array
+        self.parameter = self.selection.get() 
 
-
+        try: 
+            self.parameterSpace = [float(i) for i in self.vals.get().split(',')]
+        except: 
+            messagebox.showwarning(title = "Error", message = "Please enter a comma deliminated list of floats")
+    
     def analyseData(self): 
         """
         Create a new window object allowing the selection of an existing dataset for analysis with ML. 
@@ -191,12 +228,6 @@ class defaultsGUI(object):
         # button allows editing of default random seed to custom value 
         seedBtn = tk.Button(self.general, text = "Define Seed", command = lambda: self.setState(seedEntry))
         seedBtn.grid(row = 0, column = 1)
-
-
-
-
-
-
 
 # set up main window 
 window = tk.Tk() 
