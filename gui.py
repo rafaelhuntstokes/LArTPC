@@ -377,16 +377,18 @@ class OpenerGUI(defaultsGUI):
 
         # get what input and convert to an array
         self.parameter = self.selection.get() 
-        
+        success = False 
         try: 
             self.parameterSpace = [float(i) for i in self.vals.get().split(',')]
-
-            # bring up full default simulation window as a class object call
-            self.setupDefaultWindow()
+            success = True
 
         except: 
             messagebox.showwarning(title = "Error", message = "Please enter a comma deliminated list of floats")
     
+        if success:
+            # bring up full default simulation window as a class object call
+            self.setupDefaultWindow()
+
     def analyseData(self): 
         """
         Create a new window object allowing the selection of an existing dataset for analysis with ML. 
