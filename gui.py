@@ -16,6 +16,7 @@ class defaultsGUI(object):
         self.LONGDIFF         = 12e-4  # (m^2 s^-1)
         self.ELECTRONIC_NOISE = 5      # std in ADC counts 
         self.NUMBER_EVENTS    = 100    # number of events to simualate
+        self.LIFETIME         = 50     # micro seconds 
 
         # # delete all the current frame widgets 
         self.lifetimeBtn.destroy()
@@ -28,7 +29,7 @@ class defaultsGUI(object):
         self.general = tk.LabelFrame(window, text = "General Settings")
         self.navigation = tk.LabelFrame(window, text = "Navigation") 
         self.general.grid(column = 1) 
-        self.navigation.grid(column = 2)
+        self.navigation.grid(column = 1)
 
         # create widgits
         self.seedWidgit()         # set seed 
@@ -36,6 +37,8 @@ class defaultsGUI(object):
         self.diffusionCoeffs()    # long and trans diffusion coeffs 
         self.electronics()        # electronic noise kernel STD
         self.events()             # number of events 
+        self.lifetime()           # electron lifetime
+
         self.navButtons()         # confirm and back buttons 
 
     def navButtons(self):
@@ -71,13 +74,42 @@ class defaultsGUI(object):
         """
 
         self.eventsLabel = tk.Label(self.general, text = "Number of Events")
-        self.eventsLabel.grid(row = 5, column = 0)
+        self.eventsLabel.grid(row = 6, column = 0)
 
         number = tk.IntVar()
         number.set(self.NUMBER_EVENTS)
 
         self.eventSlide = tk.Scale(self.general, variable = number, from_ = 1, to = 10000, orient = "horizontal", length = 200, resolution = 50)
-        self.eventSlide.grid(row = 5, column = 1, columnspan = 3)
+        self.eventSlide.grid(row = 6, column = 1, columnspan = 3)
+
+    def lifetime(self):
+        """
+        Creates widget to input lifetime, unless set as independent variable, in which case shows previously
+        specified values.
+        """
+
+        self.lifeLabel = tk.Label(self.general, text = "Lifetime")
+        self.lifeLabel.grid(row = 5, column = 0)
+
+        lifeVar = tk.StringVar()
+        lifeVar.set(self.LIFETIME)
+
+        self.lifeEntry = tk.Entry(self.general, textvariable = lifeVar, state = "disabled")
+        self.lifeEntry.grid(row = 5, column = 2)
+
+        if self.parameter != "lifetime": 
+            # allow user to set the values 
+            self.lifeBtn = tk.Button(self.general, text = "Edit?", command = lambda: self.setState(self.lifeEntry))
+            self.lifeBtn.grid(row = 5, column = 1)
+
+        else: 
+            # user cannot set lifetime as already specified 
+            self.LIFETIME = self.parameterSpace
+            lifeVar.set(self.LIFETIME)
+
+            self.lifeInfo = tk.Label(self.general, text = "INDIE VAR") 
+            self.lifeInfo.grid(row = 5, column = 1)
+
 
         
     def electronics(self): 
@@ -104,7 +136,7 @@ class defaultsGUI(object):
             self.ELECTRONIC_NOISE = self.parameterSpace
             elecNoise.set(self.ELECTRONIC_NOISE)
 
-            self.elecInfo = tk.Label(self.general, text = "INDIE. VAR")
+            self.elecInfo = tk.Label(self.general, text = "INDIE VAR")
             self.elecInfo.grid(row = 4, column = 1)
 
         self.elecEntry = tk.Entry(self.general, textvariable = elecNoise, state = "disabled")
