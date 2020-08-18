@@ -10,28 +10,32 @@ class defaultsGUI(object):
     def setupDefaultWindow(self): 
         
         # setup simulation default values and variables 
-        self.SEED             = np.random.randint(0,100) 
-        self.DISTANCE         = 3.53   # (m) 
-        self.TRANSDIFF        = 7.2e-4 # (m^2 s^-1) 
-        self.LONGDIFF         = 12e-4  # (m^2 s^-1)
-        self.ELECTRONIC_NOISE = 5      # std in ADC counts 
-        self.NUMBER_EVENTS    = 100    # number of events to simualate
-        self.LIFETIME         = 50     # micro seconds 
-
-        # # delete all the current frame widgets 
-        # self.lifetimeBtn.destroy()
-        # self.elecNoiseBtn.destroy()
-        # self.radioactivityBtn.destroy()
+        self.SEED               = np.random.randint(0,100) 
+        self.DISTANCE           = 3.53   # m 
+        self.TRANSDIFF          = 7.2e-4 # m^2 s^-1 
+        self.LONGDIFF           = 12e-4  # m^2 s^-1
+        self.ELECTRONIC_NOISE   = 5      # std in ADC counts 
+        self.NUMBER_EVENTS      = 100    # number of events to simualate
+        self.LIFETIME           = 50     # micro seconds 
+        self.ARGON_Q_VALUE      = 0.6    # MeV
+        self.ARGON_ACTIVITY     = 10     # decays per module per ms
+        self.POTASSIUM_Q_VALUE  = 3.5    # MeV
+        self.POTASSIUM_ACTIVITY = 1e-3   # decays per module per ms
+        
+        # delete all the current frame widgets 
         self.spaceFrame.destroy()
         self.optionsFrame.destroy()
 
-        # create frames for first panel of default widgets and navigation buttons 
+        # create frames for general, radioactivity and navigation settings
         self.general = tk.LabelFrame(window, text = "General Settings")
         self.navigation = tk.LabelFrame(window, text = "Navigation") 
-        self.general.grid(column = 1) 
-        self.navigation.grid(column = 1)
+        self.radioactivity = tk.LabelFrame(window, text = "Radioactivity Settings")
+        self.general.grid(sticky = "nsew") 
+        self.radioactivity.grid(sticky = "nsew")
+        self.navigation.grid()
 
         # create widgits
+        # GENERAL SETTINGS FRAME 
         self.seedWidgit()         # set seed 
         self.anodeWidgit()        # drift distance slider
         self.diffusionCoeffs()    # long and trans diffusion coeffs 
@@ -39,7 +43,66 @@ class defaultsGUI(object):
         self.events()             # number of events 
         self.lifetime()           # electron lifetime
 
+        # RADIOACTIVITY FRAME
+        self.setupRadioactive()   # create a frame for each isotope in program and populate with widgets 
+
+        # NAVIGATION FRAME 
         self.navButtons()         # confirm and back buttons 
+
+    def setupRadioactive(self): 
+        """
+        Function creates a sub frame for each radioactive isotope loaded into the program. This is hardcoded (for now...). 
+        """
+
+        # ARGON-39
+        self.argonFrame = tk.LabelFrame(self.radioactivity, text = "Argon-39")
+        
+        # create widgets 
+        self.argonQLabel = tk.Label(self.argonFrame, text = "Q-Value (MeV)")
+        self.argonBtn = tk.Button(self.argonFrame, text = "Edit?", command = lambda: self.setState(self.argonQEntry))
+        arQ = tk.StringVar()
+        arQ.set(self.ARGON_Q_VALUE)
+        arActiv = tk.StringVar()
+        arActiv.set(self.ARGON_ACTIVITY)
+        self.argonQEntry = tk.Entry(self.argonFrame, textvariable = arQ, state = "disabled") 
+        self.argonActivityLabel = tk.Label(self.argonFrame, text = "Activity (mod^-1 ms^-1)")
+        self.argonActivityEntry = tk.Entry(self.argonFrame, textvariable = arActiv, state = "disabled")
+        self.argonActivityBtn = tk.Button(self.argonFrame, text = "Edit?", command = lambda: self.setState(self.argonActivityEntry))
+        
+        # place widgets 
+        self.argonQLabel.grid(row = 0, column = 0)
+        self.argonBtn.grid(row = 0, column = 1)
+        self.argonQEntry.grid(row = 0, column = 2)
+        self.argonActivityLabel.grid(row = 1, column = 0)
+        self.argonActivityBtn.grid(row = 1, column = 1)
+        self.argonActivityEntry.grid(row = 1, column = 2)
+
+        # POTASSIUM-42 
+        self.potassiumFrame = tk.LabelFrame(self.radioactivity, text = "Potassium-42")
+
+        # create widgets 
+        self.potassiumQLabel = tk.Label(self.potassiumFrame, text = "Q-Value (MeV)")
+        self.potassiumBtn = tk.Button(self.potassiumFrame, text = "Edit?", command = lambda: self.setState(self.potassiumQEntry))
+        kQ = tk.StringVar()
+        kQ.set(self.POTASSIUM_Q_VALUE)
+        kActiv = tk.StringVar()
+        kActiv.set(self.POTASSIUM_ACTIVITY)
+        self.potassiumQEntry = tk.Entry(self.potassiumFrame, textvariable = kQ, state = "disabled")
+        self.potassiumActivityLabel = tk.Label(self.potassiumFrame, text = "Activity (mod^-1 ms^-1)")
+        self.potassiumActivityEntry = tk.Entry(self.potassiumFrame, textvariable = kActiv, state = "disabled")
+        self.potassiumActivityBtn = tk.Button(self.potassiumFrame, text = "Edit?", command = lambda: self.setState(self.potassiumActivityEntry))
+
+        # place widegts 
+        self.potassiumQLabel.grid(row = 0, column = 0)
+        self.potassiumBtn.grid(row = 0, column = 1)
+        self.potassiumQEntry.grid(row = 0, column = 2)
+        self.potassiumActivityLabel.grid(row = 1, column = 0)
+        self.potassiumActivityBtn.grid(row = 1, column = 1)
+        self.potassiumActivityEntry.grid(row = 1, column = 2)
+
+        # place frames
+        self.argonFrame.grid(row = 0, column = 1)
+        self.potassiumFrame.grid(row = 1, column = 1)
 
     def navButtons(self):
         """
@@ -59,11 +122,11 @@ class defaultsGUI(object):
         
         # destroy all current widgets in frame
         self.general.destroy()
+        self.radioactivity.destroy()
         self.navigation.destroy()
 
         # call method to re-create the variable selection window 
         self.createData()
-
 
     def runSim(self):
         pass
@@ -79,7 +142,7 @@ class defaultsGUI(object):
         number = tk.IntVar()
         number.set(self.NUMBER_EVENTS)
 
-        self.eventSlide = tk.Scale(self.general, variable = number, from_ = 1, to = 10000, orient = "horizontal", length = 200, resolution = 50)
+        self.eventSlide = tk.Scale(self.general, variable = number, from_ = 1, to = 10000, orient = "horizontal", length = 150, resolution = 50)
         self.eventSlide.grid(row = 6, column = 1, columnspan = 3)
 
     def lifetime(self):
@@ -88,13 +151,13 @@ class defaultsGUI(object):
         specified values.
         """
 
-        self.lifeLabel = tk.Label(self.general, text = "Lifetime")
+        self.lifeLabel = tk.Label(self.general, text = "Lifetime (ms)")
         self.lifeLabel.grid(row = 5, column = 0)
 
         lifeVar = tk.StringVar()
         lifeVar.set(self.LIFETIME)
 
-        self.lifeEntry = tk.Entry(self.general, textvariable = lifeVar, state = "disabled")
+        self.lifeEntry = tk.Entry(self.general, textvariable = lifeVar, state = "disabled", width = 10)
         self.lifeEntry.grid(row = 5, column = 2)
 
         if self.parameter != "lifetime": 
@@ -109,8 +172,6 @@ class defaultsGUI(object):
 
             self.lifeInfo = tk.Label(self.general, text = "INDIE VAR") 
             self.lifeInfo.grid(row = 5, column = 1)
-
-
         
     def electronics(self): 
         """
@@ -118,7 +179,7 @@ class defaultsGUI(object):
         is the independent variable - if yes, fills in the values previously given. 
         """
 
-        self.elecLabel = tk.Label(self.general, text = "Electronic Noise STD")
+        self.elecLabel = tk.Label(self.general, text = "Electronic Noise STD (ADC)")
         self.elecLabel.grid(row = 4, column = 0)
 
         elecNoise = tk.DoubleVar()
@@ -139,7 +200,7 @@ class defaultsGUI(object):
             self.elecInfo = tk.Label(self.general, text = "INDIE VAR")
             self.elecInfo.grid(row = 4, column = 1)
 
-        self.elecEntry = tk.Entry(self.general, textvariable = elecNoise, state = "disabled")
+        self.elecEntry = tk.Entry(self.general, textvariable = elecNoise, state = "disabled", width = 10)
         self.elecEntry.grid(row = 4, column = 2)
 
     def diffusionCoeffs(self):
@@ -153,13 +214,13 @@ class defaultsGUI(object):
         transdiff.set(self.TRANSDIFF)
         longdiff.set(self.LONGDIFF)
 
-        self.transLabel = tk.Label(self.general, text = "Longitudinal Diffusion Coefficient")
-        self.longLabel  = tk.Label(self.general, text = "Transverse Diffusion Coefficient")
+        self.transLabel = tk.Label(self.general, text = "Longitudinal Diffusion Coefficient (m^2 / s)")
+        self.longLabel  = tk.Label(self.general, text = "Transverse Diffusion Coefficient (m^2 / s)")
         self.transLabel.grid(row = 2, column = 0)
         self.longLabel.grid(row = 3, column = 0)
 
-        self.transEntry = tk.Entry(self.general, textvariable = transdiff, state = "disabled")
-        self.longEntry  = tk.Entry(self.general, textvariable = longdiff, state = "disabled")
+        self.transEntry = tk.Entry(self.general, textvariable = transdiff, state = "disabled", width = 10)
+        self.longEntry  = tk.Entry(self.general, textvariable = longdiff, state = "disabled", width = 10)
         self.transEntry.grid(row = 2, column = 2)
         self.longEntry.grid(row = 3, column = 2)
 
@@ -186,7 +247,7 @@ class defaultsGUI(object):
         distance = tk.DoubleVar()
         distance.set(self.DISTANCE)
         
-        slider = tk.Scale(self.general, variable = distance, from_ = 0, to = 3.53, orient = "horizontal", resolution = 0.01, length = 200)
+        slider = tk.Scale(self.general, variable = distance, from_ = 0, to = 3.53, orient = "horizontal", resolution = 0.01, length = 150)
         
         label = tk.Label(self.general, text = "Drift Distance (m)")
         label.grid(row = 1, column = 0)
@@ -207,7 +268,7 @@ class defaultsGUI(object):
         seedVal.set(self.SEED)
 
         # entry field tied to seedVal variable but greyed out by default 
-        seedEntry = tk.Entry(self.general, textvariable = seedVal, state = "disabled")
+        seedEntry = tk.Entry(self.general, textvariable = seedVal, state = "disabled", width = 10)
         seedEntry.grid(row = 0, column = 2)
 
         # button allows editing of default random seed to custom value 
@@ -224,29 +285,29 @@ class OpenerGUI(defaultsGUI):
             
         # title of window 
         window.title("DUNE LArTPC Simulator")
-        window.geometry("500x350")
+        #window.geometry("600x300")
+
+        # cool graphics
+        self.canvas = tk.Canvas(window, width = 500, height = 50)
+        self.canvas.grid(row = 0, column = 0, columnspan = 4, sticky = "nswe")
+        self.img = ImageTk.PhotoImage(Image.open("sn1987a.jpg"))
+        self.canvas.create_image(100,35, anchor = "center", image = self.img)
 
         # label for choices
         self.question = tk.Label(window, text = "Do you want to create new or analyse existing data?")
-        self.question.grid(row = 1, column = 0, columnspan = 4, sticky = "nswe")
+        self.question.grid(row = 1, column = 0, columnspan = 4, rowspan = 2, sticky = "nswe")
         
         # buttons corresponding to choices
         self.createBtn = tk.Button(window, text = "Create", command = self.createData)
         self.analyseBtn = tk.Button(window, text = "Analyse", command = self.analyseData)
-        self.createBtn.grid(row = 2, column = 0, columnspan = 2, sticky ="nswe")
-        self.analyseBtn.grid(row = 2, column = 2, columnspan = 2, sticky ="nswe")
-
-        # cool graphics
-        self.canvas = tk.Canvas(window, width = 500, height = 10)
-        self.canvas.grid(row = 0, column = 0, columnspan = 4, sticky = "nswe")
-        self.img = ImageTk.PhotoImage(Image.open("sn1987a.jpg"))
-        self.canvas.create_image(100,35, anchor = "center", image = self.img)
+        self.createBtn.grid(row = 3, column = 0, columnspan = 2, sticky ="nswe")
+        self.analyseBtn.grid(row = 3, column = 2, columnspan = 2, sticky ="nswe")
 
         # formatting, giving row weights allows rows to expand to fill space
         window.grid_rowconfigure(0, weight=1)
         window.grid_rowconfigure(1, weight=1)
         window.grid_rowconfigure(2, weight=1)
-
+        window.grid_columnconfigure(4, weight = 1)
     def createData(self):
         """
         Create new window object to deal with creating a new data set. Allows selection of variable to change during data

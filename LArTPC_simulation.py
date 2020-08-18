@@ -153,7 +153,7 @@ class radiation_package(beta_smearing):
         vol           = 2 * x_volume * y_volume * z_volume  # double the volume of the event (arbitrary)
         vol_module    = 7e12                                # volume of single phase module in mm^3
         rateAr_module = 10                                  # rate of decay in a module per micro second for Ar-39  
-        rateK_module  =  1e-3                               # rate of decay in a module per micro second for K-31 
+        rateK_module  = 1e-3                                # rate of decay in a module per micro second for K-31 
         t_max         = max(drift_times)                    # amount of time spanned by the event in micro seconds 
         
         # based on mean rate of Ar-39 find mean in that volume 
