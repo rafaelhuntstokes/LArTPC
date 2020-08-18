@@ -19,11 +19,11 @@ class defaultsGUI(object):
         self.LIFETIME         = 50     # micro seconds 
 
         # # delete all the current frame widgets 
-        self.lifetimeBtn.destroy()
-        self.elecNoiseBtn.destroy()
-        self.radioactivityBtn.destroy()
-        self.variableQ.destroy()
+        # self.lifetimeBtn.destroy()
+        # self.elecNoiseBtn.destroy()
+        # self.radioactivityBtn.destroy()
         self.spaceFrame.destroy()
+        self.optionsFrame.destroy()
 
         # create frames for first panel of default widgets and navigation buttons 
         self.general = tk.LabelFrame(window, text = "General Settings")
@@ -260,24 +260,28 @@ class OpenerGUI(defaultsGUI):
         self.analyseBtn.destroy()
 
         # text in window 
-        self.variableQ = tk.Label(window, text = "Select Independent Variable for Dataset")
-        self.variableQ.grid(row = 1, column = 0, columnspan = 5)
+        # self.variableQ = tk.Label(window, text = "Select Independent Variable for Dataset")
+        # self.variableQ.grid(row = 1, column = 0, columnspan = 5)
 
         # radioselect variable  
         self.selection = tk.StringVar()
         self.selection.set("lifetime")
 
+        # create frame for the options 
+        self.optionsFrame = tk.LabelFrame(window, text = "Independent Variables")
+        self.optionsFrame.grid(row = 1, column = 0, columnspan = 5)
+
         # radioselect buttons 
-        self.lifetimeBtn = tk.Radiobutton(window, variable = self.selection, value = "lifetime", text = "Lifetime")
-        self.elecNoiseBtn = tk.Radiobutton(window, variable = self.selection, value = "electronic", text = "Electronic Noise")
-        self.radioactivityBtn = tk.Radiobutton(window, variable = self.selection, value = "radioactive", text = "Radioactivity")
-        self.lifetimeBtn.grid(row = 2, column = 1)
-        self.elecNoiseBtn.grid(row = 2, column = 2)
-        self.radioactivityBtn.grid(row = 2, column = 3)
+        self.lifetimeBtn = tk.Radiobutton(self.optionsFrame, variable = self.selection, value = "lifetime", text = "Lifetime")
+        self.elecNoiseBtn = tk.Radiobutton(self.optionsFrame, variable = self.selection, value = "electronic", text = "Electronic Noise")
+        self.radioactivityBtn = tk.Radiobutton(self.optionsFrame, variable = self.selection, value = "radioactive", text = "Radioactivity")
+        self.lifetimeBtn.grid(row = 0, column = 0)
+        self.elecNoiseBtn.grid(row = 0, column = 1)
+        self.radioactivityBtn.grid(row = 0, column = 2)
 
         # create input fields for parameter space to be probed 
         self.spaceFrame = tk.LabelFrame(window, text = "Input Parameter Space")
-        self.spaceFrame.grid(row = 3, column = 1)
+        self.spaceFrame.grid(row = 2, column = 0, columnspan = 5, sticky = "n")
         
         self.valuesLabel = tk.Label(self.spaceFrame, text = "Values:")
         self.valuesLabel.grid(row = 0, column = 0)
@@ -289,7 +293,21 @@ class OpenerGUI(defaultsGUI):
         self.acceptBtn = tk.Button(self.spaceFrame, text = "Accept", command = self.getParameterSpace)
         self.acceptBtn.grid(row = 1, column = 1)
 
-        
+        self.backBtn2 = tk.Button(self.spaceFrame, text = "Back", command = self.returnToStart)
+        self.backBtn2.grid(row = 1, column = 2)
+
+    def returnToStart(self): 
+        """
+        Returns from independent variable selection screen to analyse/create data screen. 
+        """
+
+        # destroy widgets 
+        self.optionsFrame.destroy()
+        self.spaceFrame.destroy()
+
+        # recreate screen 
+        self.__init__()
+
     def getParameterSpace(self):
         """
         Function takes the user input to find the different values of independent variable to use when generating a new 
