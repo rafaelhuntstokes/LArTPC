@@ -134,64 +134,6 @@ class defaultsGUI(object):
         self.kActivBtn.grid(row = 1, column = 1)
         self.kActivEntry.grid(row = 1, column = 2)
         
-        # # create widgets 
-        # arQ = tk.StringVar()
-        # arQ.set(self.ARGON_Q_VALUE)
-        # self.argonQLabel = tk.Label(self.argonFrame, text = "Q-Value (MeV)")
-        # self.argonBtn = tk.Button(self.argonFrame, text = "Edit?", command = lambda: self.setState(self.argonQEntry))
-        # self.argonQEntry = tk.Entry(self.argonFrame, textvariable = arQ, state = "disabled")
-        
-        # self.argonActivityLabel = tk.Label(self.argonFrame, text = "Activity (mod^-1 ms^-1)")
-        # arActiv = tk.StringVar()
-        # if self.parameter != "radioactive":
-        #     arActiv.set(self.ARGON_ACTIVITY)
-        #     self.argonActivityEntry = tk.Entry(self.argonFrame, textvariable = arActiv, state = "disabled")
-        #     self.argonActivityBtn = tk.Button(self.argonFrame, text = "Edit?", command = lambda: self.setState(self.argonActivityEntry))
-        # else:
-        #     self.ARGON_ACTIVITY = self.parameterSpace 
-        #     arActiv.set(self.ARGON_ACTIVITY)
-        #     self.argonActivityBtn = tk.Label(self.argonFrame, text = "INDIE VAR")
-        #     self.argonActivityEntry = tk.Entry(self.argonFrame, textvariable = arActiv, state = "disabled")
-        
-        # # place widgets 
-        # self.argonQLabel.grid(row = 0, column = 0)
-        # self.argonBtn.grid(row = 0, column = 1)
-        # self.argonQEntry.grid(row = 0, column = 2)
-        # self.argonActivityLabel.grid(row = 1, column = 0)
-        # self.argonActivityBtn.grid(row = 1, column = 1)
-        # self.argonActivityEntry.grid(row = 1, column = 2)
-
-        # # POTASSIUM-42 
-        # self.potassiumFrame = tk.LabelFrame(self.radioactivity, text = "Potassium-42")
-
-        # # create widgets 
-        # kQ = tk.StringVar()
-        # kQ.set(self.POTASSIUM_Q_VALUE)
-        # self.potassiumQLabel = tk.Label(self.potassiumFrame, text = "Q-Value (MeV)")
-        # self.potassiumBtn = tk.Button(self.potassiumFrame, text = "Edit?", command = lambda: self.setState(self.potassiumQEntry))
-        # self.potassiumQEntry = tk.Entry(self.potassiumFrame, textvariable = kQ, state = "disabled")
-
-        # self.potassiumActivityLabel = tk.Label(self.potassiumFrame, text = "Activity (mod^-1 ms^-1)")
-        # kActiv = tk.StringVar()
-        # if self.parameter != ""
-        # kActiv.set(self.POTASSIUM_ACTIVITY)
-        
-        
-        # self.potassiumActivityEntry = tk.Entry(self.potassiumFrame, textvariable = kActiv, state = "disabled")
-        # self.potassiumActivityBtn = tk.Button(self.potassiumFrame, text = "Edit?", command = lambda: self.setState(self.potassiumActivityEntry))
-
-        # # place widegts 
-        # self.potassiumQLabel.grid(row = 0, column = 0)
-        # self.potassiumBtn.grid(row = 0, column = 1)
-        # self.potassiumQEntry.grid(row = 0, column = 2)
-        # self.potassiumActivityLabel.grid(row = 1, column = 0)
-        # self.potassiumActivityBtn.grid(row = 1, column = 1)
-        # self.potassiumActivityEntry.grid(row = 1, column = 2)
-
-        # # place frames
-        # self.argonFrame.grid(row = 0, column = 1)
-        # self.potassiumFrame.grid(row = 1, column = 1)
-
     def navButtons(self):
         """
         Function creates a confirm button to launch simulation and a back button to return to independent variable selection screen. 
