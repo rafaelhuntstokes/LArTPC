@@ -25,6 +25,11 @@ class defaultsGUI(object):
         # delete all the current frame widgets 
         self.spaceFrame.destroy()
         self.optionsFrame.destroy()
+        try: 
+            # may not have been created
+            self.isotopeFrame.destroy()
+        except: 
+            pass 
 
         # create frames for general, radioactivity and navigation settings
         self.general = tk.LabelFrame(window, text = "General Settings")
@@ -54,55 +59,138 @@ class defaultsGUI(object):
         Function creates a sub frame for each radioactive isotope loaded into the program. This is hardcoded (for now...). 
         """
 
-        # ARGON-39
+        # create frames 
         self.argonFrame = tk.LabelFrame(self.radioactivity, text = "Argon-39")
-        
-        # create widgets 
-        self.argonQLabel = tk.Label(self.argonFrame, text = "Q-Value (MeV)")
-        self.argonBtn = tk.Button(self.argonFrame, text = "Edit?", command = lambda: self.setState(self.argonQEntry))
-        arQ = tk.StringVar()
-        arQ.set(self.ARGON_Q_VALUE)
-        arActiv = tk.StringVar()
-        arActiv.set(self.ARGON_ACTIVITY)
-        self.argonQEntry = tk.Entry(self.argonFrame, textvariable = arQ, state = "disabled") 
-        self.argonActivityLabel = tk.Label(self.argonFrame, text = "Activity (mod^-1 ms^-1)")
-        self.argonActivityEntry = tk.Entry(self.argonFrame, textvariable = arActiv, state = "disabled")
-        self.argonActivityBtn = tk.Button(self.argonFrame, text = "Edit?", command = lambda: self.setState(self.argonActivityEntry))
-        
-        # place widgets 
-        self.argonQLabel.grid(row = 0, column = 0)
-        self.argonBtn.grid(row = 0, column = 1)
-        self.argonQEntry.grid(row = 0, column = 2)
-        self.argonActivityLabel.grid(row = 1, column = 0)
-        self.argonActivityBtn.grid(row = 1, column = 1)
-        self.argonActivityEntry.grid(row = 1, column = 2)
-
-        # POTASSIUM-42 
         self.potassiumFrame = tk.LabelFrame(self.radioactivity, text = "Potassium-42")
 
-        # create widgets 
-        self.potassiumQLabel = tk.Label(self.potassiumFrame, text = "Q-Value (MeV)")
-        self.potassiumBtn = tk.Button(self.potassiumFrame, text = "Edit?", command = lambda: self.setState(self.potassiumQEntry))
+        # entry string variables
+        arQ = tk.StringVar()
         kQ = tk.StringVar()
-        kQ.set(self.POTASSIUM_Q_VALUE)
+        arActiv = tk.StringVar()
         kActiv = tk.StringVar()
+        kQ.set(self.POTASSIUM_Q_VALUE)
+        arQ.set(self.ARGON_Q_VALUE)
+        arActiv.set(self.ARGON_ACTIVITY)
         kActiv.set(self.POTASSIUM_ACTIVITY)
-        self.potassiumQEntry = tk.Entry(self.potassiumFrame, textvariable = kQ, state = "disabled")
-        self.potassiumActivityLabel = tk.Label(self.potassiumFrame, text = "Activity (mod^-1 ms^-1)")
-        self.potassiumActivityEntry = tk.Entry(self.potassiumFrame, textvariable = kActiv, state = "disabled")
-        self.potassiumActivityBtn = tk.Button(self.potassiumFrame, text = "Edit?", command = lambda: self.setState(self.potassiumActivityEntry))
 
-        # place widegts 
-        self.potassiumQLabel.grid(row = 0, column = 0)
-        self.potassiumBtn.grid(row = 0, column = 1)
-        self.potassiumQEntry.grid(row = 0, column = 2)
-        self.potassiumActivityLabel.grid(row = 1, column = 0)
-        self.potassiumActivityBtn.grid(row = 1, column = 1)
-        self.potassiumActivityEntry.grid(row = 1, column = 2)
+        # argon Q-value fields
+        self.arQLabel = tk.Label(self.argonFrame, text = "Q-Value (MeV)")
+        self.arQBtn = tk.Button(self.argonFrame, text = "Edit?", command = lambda: self.setState(self.arQEntry))
+        self.arQEntry = tk.Entry(self.argonFrame, textvariable = arQ, state = "disabled")
 
+        # potassium Q-value fields 
+        self.kQLabel = tk.Label(self.potassiumFrame, text = "Q-Value (MeV)")
+        self.kQBtn = tk.Button(self.potassiumFrame, text = "Edit?", command = lambda: self.setState(self.kQEntry))
+        self.kQEntry = tk.Entry(self.potassiumFrame, textvariable = kQ, state = "disabled")
+
+        # checks to see if activity is independent variable 
+        self.arActivLabel = tk.Label(self.argonFrame, text = "Activity (mod^-1 ms^-1)")
+        self.kActivLabel = tk.Label(self.potassiumFrame, text = "Activity (mod^-1 ms^-1")
+        
+        if self.parameter == "radioactive":
+            # using a collection of if statements for each isiotope since easier to add a new block if more isotopes are added 
+            if self.isoSelection.get() == "argon":
+                # argon activity has been set as the independent variable 
+                arActiv.set(self.parameterSpace)
+                self.arActivBtn = tk.Label(self.argonFrame, text = "INDIE VAR")
+                self.arActivEntry = tk.Entry(self.argonFrame, textvariable = arActiv, state = "disabled")
+
+                # handle potassium 
+                self.kActivBtn = tk.Button(self.potassiumFrame, text = "Edit?", command = lambda: self.setState(self.kActivEntry))
+                self.kActivEntry = tk.Entry(self.potassiumFrame, textvariable = kActiv, state = "disabled")
+
+            if self.isoSelection.get() == "potassium":
+                # potassium activity has been set as the independent variable 
+                kActiv.set(self.parameterSpace)
+                self.kActivBtn = tk.Label(self.potassiumFrame, text = "INDIE VAR")
+                self.kActivEntry = tk.Entry(self.potassiumFrame, textvariable = kActiv, state = "disabled")
+
+                # handle argon 
+                self.arActivBtn = tk.Button(self.argonFrame, text = "Edit?", command = lambda: self.setState(self.arActivEntry))
+                self.arActivEntry = tk.Entry(self.argonFrame, textvariable = arActiv, state = "disabled")
+
+        else: 
+            # radioactivity isn't independent variable so allow activity to be specified
+            self.arActivBtn = tk.Button(self.argonFrame, text = "Edit?", command = lambda: self.setState(self.arActivEntry))
+            self.arActivEntry = tk.Entry(self.argonFrame, textvariable = arActiv, state = "disabled")
+            self.kActivBtn = tk.Button(self.potassiumFrame, text = "Edit?", command = lambda: self.setState(self.kActivEntry))
+            self.kActivEntry = tk.Entry(self.potassiumFrame, textvariable = kActiv, state = "disabled")
+            
         # place frames
         self.argonFrame.grid(row = 0, column = 1)
         self.potassiumFrame.grid(row = 1, column = 1)
+
+        # place widgets 
+        self.arQLabel.grid(row = 0, column = 0)
+        self.arQBtn.grid(row = 0, column = 1)
+        self.arQEntry.grid(row = 0, column = 2)
+        self.arActivLabel.grid(row = 1, column = 0)
+        self.arActivBtn.grid(row = 1, column = 1)
+        self.arActivEntry.grid(row = 1, column = 2)
+        self.kQLabel.grid(row = 0, column = 0)
+        self.kQBtn.grid(row = 0, column = 1)
+        self.kQEntry.grid(row = 0, column = 2)
+        self.kActivLabel.grid(row = 1, column = 0)
+        self.kActivBtn.grid(row = 1, column = 1)
+        self.kActivEntry.grid(row = 1, column = 2)
+        
+        # # create widgets 
+        # arQ = tk.StringVar()
+        # arQ.set(self.ARGON_Q_VALUE)
+        # self.argonQLabel = tk.Label(self.argonFrame, text = "Q-Value (MeV)")
+        # self.argonBtn = tk.Button(self.argonFrame, text = "Edit?", command = lambda: self.setState(self.argonQEntry))
+        # self.argonQEntry = tk.Entry(self.argonFrame, textvariable = arQ, state = "disabled")
+        
+        # self.argonActivityLabel = tk.Label(self.argonFrame, text = "Activity (mod^-1 ms^-1)")
+        # arActiv = tk.StringVar()
+        # if self.parameter != "radioactive":
+        #     arActiv.set(self.ARGON_ACTIVITY)
+        #     self.argonActivityEntry = tk.Entry(self.argonFrame, textvariable = arActiv, state = "disabled")
+        #     self.argonActivityBtn = tk.Button(self.argonFrame, text = "Edit?", command = lambda: self.setState(self.argonActivityEntry))
+        # else:
+        #     self.ARGON_ACTIVITY = self.parameterSpace 
+        #     arActiv.set(self.ARGON_ACTIVITY)
+        #     self.argonActivityBtn = tk.Label(self.argonFrame, text = "INDIE VAR")
+        #     self.argonActivityEntry = tk.Entry(self.argonFrame, textvariable = arActiv, state = "disabled")
+        
+        # # place widgets 
+        # self.argonQLabel.grid(row = 0, column = 0)
+        # self.argonBtn.grid(row = 0, column = 1)
+        # self.argonQEntry.grid(row = 0, column = 2)
+        # self.argonActivityLabel.grid(row = 1, column = 0)
+        # self.argonActivityBtn.grid(row = 1, column = 1)
+        # self.argonActivityEntry.grid(row = 1, column = 2)
+
+        # # POTASSIUM-42 
+        # self.potassiumFrame = tk.LabelFrame(self.radioactivity, text = "Potassium-42")
+
+        # # create widgets 
+        # kQ = tk.StringVar()
+        # kQ.set(self.POTASSIUM_Q_VALUE)
+        # self.potassiumQLabel = tk.Label(self.potassiumFrame, text = "Q-Value (MeV)")
+        # self.potassiumBtn = tk.Button(self.potassiumFrame, text = "Edit?", command = lambda: self.setState(self.potassiumQEntry))
+        # self.potassiumQEntry = tk.Entry(self.potassiumFrame, textvariable = kQ, state = "disabled")
+
+        # self.potassiumActivityLabel = tk.Label(self.potassiumFrame, text = "Activity (mod^-1 ms^-1)")
+        # kActiv = tk.StringVar()
+        # if self.parameter != ""
+        # kActiv.set(self.POTASSIUM_ACTIVITY)
+        
+        
+        # self.potassiumActivityEntry = tk.Entry(self.potassiumFrame, textvariable = kActiv, state = "disabled")
+        # self.potassiumActivityBtn = tk.Button(self.potassiumFrame, text = "Edit?", command = lambda: self.setState(self.potassiumActivityEntry))
+
+        # # place widegts 
+        # self.potassiumQLabel.grid(row = 0, column = 0)
+        # self.potassiumBtn.grid(row = 0, column = 1)
+        # self.potassiumQEntry.grid(row = 0, column = 2)
+        # self.potassiumActivityLabel.grid(row = 1, column = 0)
+        # self.potassiumActivityBtn.grid(row = 1, column = 1)
+        # self.potassiumActivityEntry.grid(row = 1, column = 2)
+
+        # # place frames
+        # self.argonFrame.grid(row = 0, column = 1)
+        # self.potassiumFrame.grid(row = 1, column = 1)
 
     def navButtons(self):
         """
@@ -308,6 +396,7 @@ class OpenerGUI(defaultsGUI):
         window.grid_rowconfigure(1, weight=1)
         window.grid_rowconfigure(2, weight=1)
         window.grid_columnconfigure(4, weight = 1)
+
     def createData(self):
         """
         Create new window object to deal with creating a new data set. Allows selection of variable to change during data
@@ -340,6 +429,10 @@ class OpenerGUI(defaultsGUI):
         self.elecNoiseBtn.grid(row = 0, column = 1)
         self.radioactivityBtn.grid(row = 0, column = 2)
 
+        # bind radioactivity button selection to click event that will open up new frame 
+        # allowing selection of desired isotope
+        self.radioactivityBtn.bind("<Button-1>", self.isotopeChoice)
+
         # create input fields for parameter space to be probed 
         self.spaceFrame = tk.LabelFrame(window, text = "Input Parameter Space")
         self.spaceFrame.grid(row = 2, column = 0, columnspan = 5, sticky = "n")
@@ -356,6 +449,25 @@ class OpenerGUI(defaultsGUI):
 
         self.backBtn2 = tk.Button(self.spaceFrame, text = "Back", command = self.returnToStart)
         self.backBtn2.grid(row = 1, column = 2)
+
+    def isotopeChoice(self, event):
+        """
+        Event callback function which creates a new frame in independent variable selection window, allowing user to 
+        specify which radioactive isotope's activity to vary.
+        """
+
+        # create frame and reposition 
+        self.isotopeFrame = tk.LabelFrame(window, text = "Select Isotope")
+        self.isotopeFrame.grid(row = 2, column = 0, columnspan = 5)
+        self.spaceFrame.grid(row = 3, column = 0, columnspan = 5)
+
+        # add radioselect buttons for isotopes 
+        self.isoSelection = tk.StringVar()
+        self.isoSelection.set("argon")
+        self.arSelec = tk.Radiobutton(self.isotopeFrame, value = "argon", variable = self.isoSelection, text = "Ar-39")
+        self.kSelec = tk.Radiobutton(self.isotopeFrame, value = "potassium", variable = self.isoSelection, text = "K-42")
+        self.arSelec.grid(row = 0, column = 0)
+        self.kSelec.grid(row = 0, column = 1)
 
     def returnToStart(self): 
         """
