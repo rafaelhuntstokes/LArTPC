@@ -10,18 +10,21 @@ class defaultsGUI(object):
     def setupDefaultWindow(self): 
         
         # setup simulation default values and variables 
-        self.SEED               = np.random.randint(0,100) 
-        self.DISTANCE           = 3.53   # m 
-        self.TRANSDIFF          = 7.2e-4 # m^2 s^-1 
-        self.LONGDIFF           = 12e-4  # m^2 s^-1
-        self.ELECTRONIC_NOISE   = 5      # std in ADC counts 
-        self.NUMBER_EVENTS      = 100    # number of events to simualate
-        self.LIFETIME           = 50     # micro seconds 
-        self.ARGON_Q_VALUE      = 0.6    # MeV
-        self.ARGON_ACTIVITY     = 10     # decays per module per ms
-        self.POTASSIUM_Q_VALUE  = 3.5    # MeV
-        self.POTASSIUM_ACTIVITY = 1e-3   # decays per module per ms
-        
+        self.SEED                  = np.random.randint(0,100) 
+        self.DISTANCE              = 3.53   # m 
+        self.TRANSDIFF             = 7.2e-4 # m^2 s^-1 
+        self.LONGDIFF              = 12e-4  # m^2 s^-1
+        self.ELECTRONIC_NOISE      = 5      # std in ADC counts 
+        self.NUMBER_EVENTS         = 100    # number of events to simualate
+        self.LIFETIME              = 50     # micro seconds 
+        self.ARGON_Q_VALUE         = 0.6    # MeV
+        self.ARGON_ACTIVITY        = 10     # decays per module per ms
+        self.POTASSIUM_Q_VALUE     = 3.5    # MeV
+        self.POTASSIUM_ACTIVITY    = 1e-3   # decays per module per ms
+        self.RADIOACTIVE_SMEAR     = True   # flags whether or not to assume point deposition of energy for radioactivity 
+        self.RADIOACTIVE_STEP_SIZE = 0.5    # cm (?) step size for depositing radioactive energy along trajectories
+        self.MACHINE_LEARNING      = True   # should data be passed to ML for analysis automatically 
+
         # delete all the current frame widgets 
         self.spaceFrame.destroy()
         self.optionsFrame.destroy()
@@ -31,12 +34,15 @@ class defaultsGUI(object):
         except: 
             pass 
 
-        # create frames for general, radioactivity and navigation settings
+        # create frames for general, radioactivity, machine learning and navigation settings
         self.general = tk.LabelFrame(window, text = "General Settings")
         self.navigation = tk.LabelFrame(window, text = "Navigation") 
         self.radioactivity = tk.LabelFrame(window, text = "Radioactivity Settings")
+        self.machine = tk.LabelFrame(window, text = "Machine Learning Settings")
+
         self.general.grid(sticky = "nsew") 
         self.radioactivity.grid(sticky = "nsew")
+        self.machine.grid(sticky = "nsew")
         self.navigation.grid()
 
         # create widgits
@@ -49,12 +55,80 @@ class defaultsGUI(object):
         self.lifetime()           # electron lifetime
 
         # RADIOACTIVITY FRAME
-        self.setupRadioactive()   # create a frame for each isotope in program and populate with widgets 
+        self.setupRadioactiveSmear()    # create a frame to select point deposition or smearing behaviour of radioactive decays 
+        self.setupRadioactiveIsotopes() # create a frame for each isotope in program and populate with widgets 
+
+        # MACHINE LEARNING FRAME
+        self.machineSettings() 
 
         # NAVIGATION FRAME 
         self.navButtons()         # confirm and back buttons 
 
-    def setupRadioactive(self): 
+    def machineSettings(self): 
+        """
+        Function populates the ML frame with settings widgets to allow control of learning rate, (+other settings?).
+        """
+
+        self.machineOnBtn = tk.Button(self.machine, text = "ON", bg = "green", command = self.machineSetBtn)
+        self.machineOnBtn.grid()
+
+    def machineSetBtn(self):
+        """
+        Toggles ML button colour, text and whether data is passed to ML automatically. Should refacture to work for all buttons! 
+        """
+
+        # change button text and colour 
+        if self.machineOnBtn["text"] == "ON":
+            self.machineOnBtn["text"] = "OFF"
+            self.machineOnBtn["bg"] = "red"
+            self.MACHINE_LEARNING = False
+        else: 
+            self.machineOnBtn["text"] = "ON"
+            self.machineOnBtn["bg"] = "green"
+            self.MACHINE_LEARNING = True
+
+    def setupRadioactiveSmear(self):
+        """
+        Creates frame and widgets to allow user to turn smearing effects on or off and select step size of energy 
+        deposition if turned on. 
+        """
+
+        # create subframe 
+        self.radioactiveSmearFrame = tk.LabelFrame(self.radioactivity, text = "Radioactive Beta Simulations")
+
+        # create widgets 
+        stepSize = tk.StringVar()
+        stepSize.set(self.RADIOACTIVE_STEP_SIZE)
+        self.radioactiveSmearBtn = tk.Button(self.radioactiveSmearFrame, text = "ON", bg = "green", command = self.smearButton)
+        self.radioactiveSmearLabel = tk.Label(self.radioactiveSmearFrame, text = "Step Size (cm):")
+        self.radioactiveSmearEntry = tk.Entry(self.radioactiveSmearFrame, textvariable = stepSize)
+
+        # place widgets 
+        self.radioactiveSmearFrame.grid(row = 0, column = 0, sticky = "ew")
+        self.radioactiveSmearBtn.grid(row = 0, column = 0)
+        self.radioactiveSmearLabel.grid(row = 0, column = 1)
+        self.radioactiveSmearEntry.grid(row = 0, column = 2)
+
+
+    def smearButton(self): 
+        """
+        Function changes button text, colour and disables/enables step size entry field for radioactive smearing simulation panel. 
+        """
+
+        # change button text and colour 
+        if self.radioactiveSmearBtn["text"] == "ON":
+            self.radioactiveSmearBtn["text"] = "OFF"
+            self.radioactiveSmearBtn["bg"] = "red"
+            self.RADIOACTIVE_SMEAR = False
+        else: 
+            self.radioactiveSmearBtn["text"] = "ON"
+            self.radioactiveSmearBtn["bg"] = "green"
+            self.RADIOACTIVE_SMEAR = True
+        
+        # change entry field state
+        self.setState(self.radioactiveSmearBtn)
+
+    def setupRadioactiveIsotopes(self): 
         """
         Function creates a sub frame for each radioactive isotope loaded into the program. This is hardcoded (for now...). 
         """
@@ -85,7 +159,7 @@ class defaultsGUI(object):
 
         # checks to see if activity is independent variable 
         self.arActivLabel = tk.Label(self.argonFrame, text = "Activity (mod^-1 ms^-1)")
-        self.kActivLabel = tk.Label(self.potassiumFrame, text = "Activity (mod^-1 ms^-1")
+        self.kActivLabel = tk.Label(self.potassiumFrame, text = "Activity (mod^-1 ms^-1)")
         
         if self.parameter == "radioactive":
             # using a collection of if statements for each isiotope since easier to add a new block if more isotopes are added 
@@ -117,8 +191,8 @@ class defaultsGUI(object):
             self.kActivEntry = tk.Entry(self.potassiumFrame, textvariable = kActiv, state = "disabled")
             
         # place frames
-        self.argonFrame.grid(row = 0, column = 1)
-        self.potassiumFrame.grid(row = 1, column = 1)
+        self.argonFrame.grid(row = 1, column = 0)
+        self.potassiumFrame.grid(row = 2, column = 0)
 
         # place widgets 
         self.arQLabel.grid(row = 0, column = 0)
@@ -153,6 +227,7 @@ class defaultsGUI(object):
         # destroy all current widgets in frame
         self.general.destroy()
         self.radioactivity.destroy()
+        self.machine.destroy()
         self.navigation.destroy()
 
         # call method to re-create the variable selection window 
@@ -350,10 +425,6 @@ class OpenerGUI(defaultsGUI):
         self.question.destroy()
         self.createBtn.destroy()
         self.analyseBtn.destroy()
-
-        # text in window 
-        # self.variableQ = tk.Label(window, text = "Select Independent Variable for Dataset")
-        # self.variableQ.grid(row = 1, column = 0, columnspan = 5)
 
         # radioselect variable  
         self.selection = tk.StringVar()
