@@ -21,9 +21,17 @@ class defaultsGUI(object):
         self.ARGON_ACTIVITY        = 10     # decays per module per ms
         self.POTASSIUM_Q_VALUE     = 3.5    # MeV
         self.POTASSIUM_ACTIVITY    = 1e-3   # decays per module per ms
-        self.RADIOACTIVE_SMEAR     = True   # flags whether or not to assume point deposition of energy for radioactivity 
         self.RADIOACTIVE_STEP_SIZE = 0.5    # cm (?) step size for depositing radioactive energy along trajectories
-        self.MACHINE_LEARNING      = True   # should data be passed to ML for analysis automatically 
+        self.EPOCHS                = 20     # default number of epochs to use in ML training 
+        self.BATCH                 = 32     # default batch size for ML training 
+        self.TRAIN                 = 0.6    # default % data used to train model 
+        self.VALIDATE              = 0.2    # default % data used to validate model 
+        self.TEST                  = 0.2    # default % data used to test model 
+
+        # flag dict to determine which options to apply to sim 
+        self.SETTINGS = {"MACHINE_LEARNING": True, "RADIOACTIVE_SMEAR": True, "ISOTOPE_ARGON": True, 
+                         "ISOTOPE_POTASSIUM": True, "TRANS_DIFFUSION": True, "LONG_DIFFUSION": True,
+                         "ELECTRONIC_NOISE": True, "LIFETIME": True}
 
         # delete all the current frame widgets 
         self.spaceFrame.destroy()
@@ -33,6 +41,9 @@ class defaultsGUI(object):
             self.isotopeFrame.destroy()
         except: 
             pass 
+        
+        # change window heading 
+        window.title("Simulation Settings")
 
         # create frames for general, radioactivity, machine learning and navigation settings
         self.general = tk.LabelFrame(window, text = "General Settings")
@@ -64,28 +75,76 @@ class defaultsGUI(object):
         # NAVIGATION FRAME 
         self.navButtons()         # confirm and back buttons 
 
+    def changeButtonState(self, frame, Button, flag):
+        """
+        Function changes a button text and colour when clicked, and switches associated Boolean value.
+        """
+
+        # change colour, text and state 
+        if Button["text"] == "ON":
+            Button["text"] = "OFF"
+            Button["bg"] = "red"
+            self.SETTINGS[flag] = False
+
+            # disable all other widgets in frame
+            for child in frame.winfo_children():
+                child.configure(state = "disabled") 
+            # re-enable the flag button 
+            Button["state"] = "normal"
+        
+        else: 
+            Button["text"] = "ON"
+            Button["bg"] = "green"
+            self.SETTINGS[flag] = True
+        
+            # enable all other widgets in frame
+            for child in frame.winfo_children():
+                child.configure(state = "normal")
+
     def machineSettings(self): 
         """
         Function populates the ML frame with settings widgets to allow control of learning rate, (+other settings?).
         """
+        
+        # button to turn ML settings on or OFF
+        self.machineOnBtn = tk.Button(self.machine, text = "ON", bg = "green", command = lambda: self.changeButtonState(self.machine, self.machineOnBtn, "MACHINE_LEARNING"))
+        self.machineOnBtn.grid(sticky = "ew")
 
-        self.machineOnBtn = tk.Button(self.machine, text = "ON", bg = "green", command = self.machineSetBtn)
-        self.machineOnBtn.grid()
+        # create widgets 
+        epochs = tk.StringVar()
+        batch = tk.StringVar()
+        train = tk.StringVar()
+        valid = tk.StringVar()
+        test = tk.StringVar()
+        epochs.set(self.EPOCHS)
+        batch.set(self.BATCH)
+        train.set(self.TRAIN)
+        valid.set(self.VALIDATE)
+        test.set(self.TEST)
+        self.description = tk.Label(self.machine, text = "CNN trained and tested on data using Adam optimiser.")
+        self.epochLabel = tk.Label(self.machine, text = "Epochs")
+        self.epochEntry = tk.Entry(self.machine, textvariable = epochs, width = 5)
+        self.batchLabel = tk.Label(self.machine, text = "Batch Size")
+        self.batchEntry = tk.Entry(self.machine, textvariable = batch, width = 5)
+        self.trainLabel = tk.Label(self.machine, text = "Train %")
+        self.validLabel = tk.Label(self.machine, text = "Valid %")
+        self.testLabel = tk.Label(self.machine, text = "Test %")
+        self.trainEntry = tk.Entry(self.machine, textvariable = train, width = 5)
+        self.validEntry = tk.Entry(self.machine, textvariable = valid, width = 5)
+        self.testEntry = tk.Entry(self.machine, textvariable = test, width = 5)
 
-    def machineSetBtn(self):
-        """
-        Toggles ML button colour, text and whether data is passed to ML automatically. Should refacture to work for all buttons! 
-        """
-
-        # change button text and colour 
-        if self.machineOnBtn["text"] == "ON":
-            self.machineOnBtn["text"] = "OFF"
-            self.machineOnBtn["bg"] = "red"
-            self.MACHINE_LEARNING = False
-        else: 
-            self.machineOnBtn["text"] = "ON"
-            self.machineOnBtn["bg"] = "green"
-            self.MACHINE_LEARNING = True
+        # place widgets 
+        self.description.grid(row = 0, column = 1, columnspan = 6)
+        self.epochLabel.grid(row = 1, column = 1)
+        self.epochEntry.grid(row = 1, column = 2)
+        self.batchLabel.grid(row = 2, column = 1)
+        self.batchEntry.grid(row = 2, column = 2)
+        self.trainLabel.grid(row = 3, column = 1)
+        self.trainEntry.grid(row = 3, column = 2)
+        self.validLabel.grid(row = 3, column = 3)
+        self.validEntry.grid(row = 3, column = 4)
+        self.testLabel.grid(row = 3, column = 5)
+        self.testEntry.grid(row = 3, column = 6)
 
     def setupRadioactiveSmear(self):
         """
@@ -94,12 +153,12 @@ class defaultsGUI(object):
         """
 
         # create subframe 
-        self.radioactiveSmearFrame = tk.LabelFrame(self.radioactivity, text = "Radioactive Beta Simulations")
+        self.radioactiveSmearFrame = tk.LabelFrame(self.radioactivity, text = "Radioactive Beta Smearing")
 
         # create widgets 
         stepSize = tk.StringVar()
         stepSize.set(self.RADIOACTIVE_STEP_SIZE)
-        self.radioactiveSmearBtn = tk.Button(self.radioactiveSmearFrame, text = "ON", bg = "green", command = self.smearButton)
+        self.radioactiveSmearBtn = tk.Button(self.radioactiveSmearFrame, text = "ON", bg = "green", command = lambda: self.changeButtonState(self.radioactiveSmearFrame, self.radioactiveSmearBtn, "RADIOACTIVE_SMEAR"))
         self.radioactiveSmearLabel = tk.Label(self.radioactiveSmearFrame, text = "Step Size (cm):")
         self.radioactiveSmearEntry = tk.Entry(self.radioactiveSmearFrame, textvariable = stepSize)
 
@@ -108,25 +167,6 @@ class defaultsGUI(object):
         self.radioactiveSmearBtn.grid(row = 0, column = 0)
         self.radioactiveSmearLabel.grid(row = 0, column = 1)
         self.radioactiveSmearEntry.grid(row = 0, column = 2)
-
-
-    def smearButton(self): 
-        """
-        Function changes button text, colour and disables/enables step size entry field for radioactive smearing simulation panel. 
-        """
-
-        # change button text and colour 
-        if self.radioactiveSmearBtn["text"] == "ON":
-            self.radioactiveSmearBtn["text"] = "OFF"
-            self.radioactiveSmearBtn["bg"] = "red"
-            self.RADIOACTIVE_SMEAR = False
-        else: 
-            self.radioactiveSmearBtn["text"] = "ON"
-            self.radioactiveSmearBtn["bg"] = "green"
-            self.RADIOACTIVE_SMEAR = True
-        
-        # change entry field state
-        self.setState(self.radioactiveSmearBtn)
 
     def setupRadioactiveIsotopes(self): 
         """
@@ -160,11 +200,18 @@ class defaultsGUI(object):
         # checks to see if activity is independent variable 
         self.arActivLabel = tk.Label(self.argonFrame, text = "Activity (mod^-1 ms^-1)")
         self.kActivLabel = tk.Label(self.potassiumFrame, text = "Activity (mod^-1 ms^-1)")
-        
+
+        # add on/off button for simulating the isotope
+        self.arOnBtn = tk.Button(self.argonFrame, text = "ON", bg = "green", command = lambda: self.changeButtonState(self.argonFrame, self.arOnBtn, "ISOTOPE_ARGON"))
+        self.kOnBtn = tk.Button(self.potassiumFrame, text = "ON", bg = "green", command = lambda: self.changeButtonState(self.potassiumFrame, self.kOnBtn, "ISOTOPE_POTASSIUM"))
+
         if self.parameter == "radioactive":
             # using a collection of if statements for each isiotope since easier to add a new block if more isotopes are added 
             if self.isoSelection.get() == "argon":
                 # argon activity has been set as the independent variable 
+                # grey out argon ON/OFF button since it must be on 
+                self.arOnBtn["state"] = "disabled"
+
                 arActiv.set(self.parameterSpace)
                 self.arActivBtn = tk.Label(self.argonFrame, text = "INDIE VAR")
                 self.arActivEntry = tk.Entry(self.argonFrame, textvariable = arActiv, state = "disabled")
@@ -175,6 +222,9 @@ class defaultsGUI(object):
 
             if self.isoSelection.get() == "potassium":
                 # potassium activity has been set as the independent variable 
+                # grey out argon ON/OFF button since it must be on 
+                self.kOnBtn["state"] = "disabled"
+
                 kActiv.set(self.parameterSpace)
                 self.kActivBtn = tk.Label(self.potassiumFrame, text = "INDIE VAR")
                 self.kActivEntry = tk.Entry(self.potassiumFrame, textvariable = kActiv, state = "disabled")
@@ -195,18 +245,20 @@ class defaultsGUI(object):
         self.potassiumFrame.grid(row = 2, column = 0)
 
         # place widgets 
-        self.arQLabel.grid(row = 0, column = 0)
-        self.arQBtn.grid(row = 0, column = 1)
-        self.arQEntry.grid(row = 0, column = 2)
-        self.arActivLabel.grid(row = 1, column = 0)
-        self.arActivBtn.grid(row = 1, column = 1)
-        self.arActivEntry.grid(row = 1, column = 2)
-        self.kQLabel.grid(row = 0, column = 0)
-        self.kQBtn.grid(row = 0, column = 1)
-        self.kQEntry.grid(row = 0, column = 2)
-        self.kActivLabel.grid(row = 1, column = 0)
-        self.kActivBtn.grid(row = 1, column = 1)
-        self.kActivEntry.grid(row = 1, column = 2)
+        self.arOnBtn.grid(row = 0, column = 0, sticky = "ew")
+        self.arQLabel.grid(row = 0, column = 1)
+        self.arQBtn.grid(row = 0, column = 2)
+        self.arQEntry.grid(row = 0, column = 3)
+        self.arActivLabel.grid(row = 1, column = 1)
+        self.arActivBtn.grid(row = 1, column = 2)
+        self.arActivEntry.grid(row = 1, column = 3)
+        self.kOnBtn.grid(row = 0, column = 0, sticky = "ew")
+        self.kQLabel.grid(row = 0, column = 1)
+        self.kQBtn.grid(row = 0, column = 2)
+        self.kQEntry.grid(row = 0, column = 3)
+        self.kActivLabel.grid(row = 1, column = 1)
+        self.kActivBtn.grid(row = 1, column = 2)
+        self.kActivEntry.grid(row = 1, column = 3)
         
     def navButtons(self):
         """
@@ -256,36 +308,51 @@ class defaultsGUI(object):
         specified values.
         """
 
-        self.lifeLabel = tk.Label(self.general, text = "Lifetime (ms)")
-        self.lifeLabel.grid(row = 5, column = 0)
+        # add ON/OFF button by creating a sub frame for the option to be toggled on/off
+        # otherwise the changeButtonState would get every child in self.general to toggle! 
+        self.lifetime_frame = tk.Frame(self.general)
+        self.lifetime_frame.grid(row = 5, column = 0, columnspan = 4, sticky = "ew")
+        self.lifetimeOnBtn = tk.Button(self.lifetime_frame, text = "ON", bg = "green", command = lambda: self.changeButtonState(self.lifetime_frame, self.lifetimeOnBtn, "LIFETIME"))
+        self.lifetimeOnBtn.grid(row = 0, column = 0)
+        self.lifeLabel = tk.Label(self.lifetime_frame, text = "Lifetime (ms)")
+        self.lifeLabel.grid(row = 0, column = 1)
 
         lifeVar = tk.StringVar()
         lifeVar.set(self.LIFETIME)
 
-        self.lifeEntry = tk.Entry(self.general, textvariable = lifeVar, state = "disabled", width = 10)
-        self.lifeEntry.grid(row = 5, column = 2)
+        self.lifeEntry = tk.Entry(self.lifetime_frame, textvariable = lifeVar, state = "disabled", width = 10)
+        self.lifeEntry.grid(row = 0, column = 3, sticky= "e")
 
         if self.parameter != "lifetime": 
             # allow user to set the values 
-            self.lifeBtn = tk.Button(self.general, text = "Edit?", command = lambda: self.setState(self.lifeEntry))
-            self.lifeBtn.grid(row = 5, column = 1)
+            self.lifeBtn = tk.Button(self.lifetime_frame, text = "Edit?", command = lambda: self.setState(self.lifeEntry))
+            self.lifeBtn.grid(row = 0, column = 2)
 
         else: 
             # user cannot set lifetime as already specified 
+            # lifetime cannot be switched off 
+            self.lifetimeOnBtn["state"] = "disabled"
             self.LIFETIME = self.parameterSpace
             lifeVar.set(self.LIFETIME)
 
-            self.lifeInfo = tk.Label(self.general, text = "INDIE VAR") 
-            self.lifeInfo.grid(row = 5, column = 1)
+            self.lifeInfo = tk.Label(self.lifetime_frame, text = "INDIE VAR") 
+            self.lifeInfo.grid(row = 0, column = 2)
         
     def electronics(self): 
         """
-        Widgit lets you set set standard deviation of gaussian blur for electronic noise response. Checks if electronic noise 
+        Widget lets you set set standard deviation of gaussian blur for electronic noise response. Checks if electronic noise 
         is the independent variable - if yes, fills in the values previously given. 
         """
 
-        self.elecLabel = tk.Label(self.general, text = "Electronic Noise STD (ADC)")
-        self.elecLabel.grid(row = 4, column = 0)
+        # create sub frame for toggling settings on/off
+        self.electronics_frame = tk.Frame(self.general)
+        self.electronics_frame.grid(row = 4, column = 0, columnspan = 4, sticky = "ew")
+
+        # create toggle button 
+        self.electronicsOnBtn = tk.Button(self.electronics_frame, text = "ON", bg = "green", command = lambda: self.changeButtonState(self.electronics_frame, self.electronicsOnBtn, "ELECTRONICS"))
+        self.electronicsOnBtn.grid(row = 0, column = 0)
+        self.elecLabel = tk.Label(self.electronics_frame, text = "Electronic Noise STD (ADC)")
+        self.elecLabel.grid(row = 0, column = 1)
 
         elecNoise = tk.DoubleVar()
 
@@ -294,45 +361,60 @@ class defaultsGUI(object):
             elecNoise = tk.DoubleVar()
             elecNoise.set(self.ELECTRONIC_NOISE)
 
-            self.elecBtn = tk.Button(self.general, text = "Edit?", command = lambda: self.setState(self.elecEntry))
-            self.elecBtn.grid(row = 4, column = 1)
+            self.elecBtn = tk.Button(self.electronics_frame, text = "Edit?", command = lambda: self.setState(self.elecEntry))
+            self.elecBtn.grid(row = 0, column = 2)
         
         else: 
             # electronic noise is the independent variable, with values already set. Fill widget with these values. 
+            # can't toggle independent variable on/off
+            self.electronicsOnBtn["state"] = "disabled"
             self.ELECTRONIC_NOISE = self.parameterSpace
             elecNoise.set(self.ELECTRONIC_NOISE)
 
-            self.elecInfo = tk.Label(self.general, text = "INDIE VAR")
-            self.elecInfo.grid(row = 4, column = 1)
+            self.elecInfo = tk.Label(self.electronics_frame, text = "INDIE VAR")
+            self.elecInfo.grid(row = 0, column = 2)
 
-        self.elecEntry = tk.Entry(self.general, textvariable = elecNoise, state = "disabled", width = 10)
-        self.elecEntry.grid(row = 4, column = 2)
+        self.elecEntry = tk.Entry(self.electronics_frame, textvariable = elecNoise, state = "disabled", width = 10)
+        self.elecEntry.grid(row = 0, column = 3)
 
     def diffusionCoeffs(self):
         """
         Creates the widgit for displaying/altering the diffusion coefficients.
         """
 
+        # create sub-frames for toggle buttons 
+        self.longDiffFrame = tk.Frame(self.general)
+        self.transDiffFrame = tk.Frame(self.general)
+        self.longDiffFrame.grid(row = 3, column = 0, columnspan = 4, sticky = "ew")
+        self.transDiffFrame.grid(row = 2, column = 0, columnspan = 4, sticky = "ew")
+        
+        # set textvariables used to track diffusion coeff values 
         transdiff = tk.DoubleVar()
         longdiff  = tk.DoubleVar()
-
         transdiff.set(self.TRANSDIFF)
         longdiff.set(self.LONGDIFF)
 
-        self.transLabel = tk.Label(self.general, text = "Longitudinal Diffusion Coefficient (m^2 / s)")
-        self.longLabel  = tk.Label(self.general, text = "Transverse Diffusion Coefficient (m^2 / s)")
-        self.transLabel.grid(row = 2, column = 0)
-        self.longLabel.grid(row = 3, column = 0)
+        # create the toggle buttons 
+        self.longDiffBtn = tk.Button(self.longDiffFrame, text = "ON", bg = "green", command = lambda: self.changeButtonState(self.longDiffFrame, self.longDiffBtn, "LONG_DIFFUSION"))
+        self.transDiffBtn = tk.Button(self.transDiffFrame, text = "ON", bg = "green", command = lambda: self.changeButtonState(self.transDiffFrame, self.transDiffBtn, "TRANS_DIFFUSION"))
+        self.longDiffBtn.grid(row = 0, column = 0, sticky = "ew")
+        self.transDiffBtn.grid(row = 0, column = 0, sticky = "ew")
 
-        self.transEntry = tk.Entry(self.general, textvariable = transdiff, state = "disabled", width = 10)
-        self.longEntry  = tk.Entry(self.general, textvariable = longdiff, state = "disabled", width = 10)
-        self.transEntry.grid(row = 2, column = 2)
-        self.longEntry.grid(row = 3, column = 2)
+        # create other widgets 
+        self.transLabel = tk.Label(self.transDiffFrame, text = "Longitudinal Diffusion Coefficient (m^2 / s)")
+        self.longLabel  = tk.Label(self.longDiffFrame, text = "Transverse Diffusion Coefficient (m^2 / s)")
+        self.transLabel.grid(row = 0, column = 1, sticky = "ew")
+        self.longLabel.grid(row = 0, column = 1, sticky = "ew")
 
-        self.transBtn = tk.Button(self.general, text = "Edit?", command = lambda: self.setState(self.transEntry))
-        self.longBtn  = tk.Button(self.general, text = "Edit?", command = lambda: self.setState(self.longEntry))
-        self.transBtn.grid(row = 2, column = 1)
-        self.longBtn.grid(row = 3, column = 1)
+        self.transEntry = tk.Entry(self.transDiffFrame, textvariable = transdiff, state = "disabled", width = 10)
+        self.longEntry  = tk.Entry(self.longDiffFrame, textvariable = longdiff, state = "disabled", width = 10)
+        self.transEntry.grid(row = 0, column = 3, sticky = "ew")
+        self.longEntry.grid(row = 0, column = 3, sticky = "ew")
+
+        self.transBtn = tk.Button(self.transDiffFrame, text = "Edit?", command = lambda: self.setState(self.transEntry))
+        self.longBtn  = tk.Button(self.longDiffFrame, text = "Edit?", command = lambda: self.setState(self.longEntry))
+        self.transBtn.grid(row = 0, column = 2, sticky = "ew")
+        self.longBtn.grid(row = 0, column = 2, sticky = "ew")
 
 
     def setState(self, widgit):
