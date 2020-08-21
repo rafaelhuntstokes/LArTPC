@@ -96,6 +96,9 @@ class defaultsGUI(object):
                     # if find subframe as a child, find the children of subframe and disable them 
                     for recursiveChild in child.winfo_children():
                         recursiveChild.configure(state = "disabled") 
+                        if recursiveChild.winfo_class() == "Button":
+                            recursiveChild.configure(text = "OFF")
+                            recursiveChild.configure(bg = "red")
 
             # re-enable the flag button 
             Button["state"] = "normal"
@@ -111,8 +114,10 @@ class defaultsGUI(object):
                     child.configure(state = "normal")
                 else: 
                     for recursiveChild in child.winfo_children():
-                        
-                        recursiveChild.configure(state = "normal") 
+                        recursiveChild.configure(state = "normal")
+                        if recursiveChild.winfo_class() == "Button":
+                            recursiveChild.configure(text = "ON")
+                            recursiveChild.configure(bg = "green") 
         
         # check settings updated
         print(self.SETTINGS)
