@@ -31,7 +31,7 @@ class defaultsGUI(object):
         # flag dict to determine which options to apply to sim 
         self.SETTINGS = {"MACHINE_LEARNING": True, "RADIOACTIVITY_MASTER": True, "RADIOACTIVE_SMEAR": True, "ISOTOPE_ARGON": True, 
                          "ISOTOPE_POTASSIUM": True, "TRANS_DIFFUSION": True, "LONG_DIFFUSION": True,
-                         "ELECTRONIC_NOISE": True, "LIFETIME": True}
+                         "ELECTRONIC_NOISE": True, "LIFETIME": True, "DATA_LOC": "./images", "RESULTS_LOC": "./results"}
 
         # delete all the current frame widgets 
         self.spaceFrame.destroy()
@@ -45,15 +45,17 @@ class defaultsGUI(object):
         # change window heading 
         window.title("Simulation Settings")
 
-        # create frames for general, radioactivity, machine learning and navigation settings
+        # create frames for general, radioactivity, machine learning, saving files and navigation settings
         self.general = tk.LabelFrame(window, text = "General Settings")
-        self.navigation = tk.LabelFrame(window, text = "Navigation") 
         self.radioactivity = tk.LabelFrame(window, text = "Radioactivity Settings")
         self.machine = tk.LabelFrame(window, text = "Machine Learning Settings")
+        self.saving = tk.LabelFrame(window, text = "Saving Data")
+        self.navigation = tk.LabelFrame(window, text = "Navigation") 
 
         self.general.grid(sticky = "nsew") 
         self.radioactivity.grid(sticky = "nsew")
         self.machine.grid(sticky = "nsew")
+        self.saving.grid(sticky = "nsew")
         self.navigation.grid()
 
         # create widgits
@@ -71,7 +73,10 @@ class defaultsGUI(object):
         self.setupRadioactiveIsotopes()  # create a frame for each isotope in program and populate with widgets 
 
         # MACHINE LEARNING FRAME
-        self.machineSettings() 
+        self.machineSettings() # number of epochs, batch size and train/valid/test split
+
+        # SAVE DATA FRAME
+        self.saveData() # add widgets to specify the location to save generated data and results 
 
         # NAVIGATION FRAME 
         self.navButtons()         # confirm and back buttons 
@@ -125,8 +130,41 @@ class defaultsGUI(object):
                                 recursiveChild.configure(text = "ON")
                                 recursiveChild.configure(bg = "green") 
         
-        # check settings updated
-        print(self.SETTINGS)
+        # if ML settings switched on/off, enable/disable save results entry (no ML, no results to save)
+        if flag == "MACHINE_LEARNING": 
+            if Button["text"] == "ON":
+                # enable save results 
+                self.resultsPathEntry["state"] = "normal"
+                self.resultsPath.set(self.SETTINGS["RESULTS_LOC"])
+            else: 
+                # disable results path
+                self.resultsPath.set("NO ML RESULTS")
+                self.resultsPathEntry["state"] = "disabled"
+
+    def saveData(self):
+        """
+        Adds widgets to allow user to specify the location to save generated data and results. 
+        """
+
+        # explanatory text
+        self.explanationSaveTxt = tk.Label(self.saving, text = "Please specify the location to save generated images and results.")
+        self.explanationSaveTxt.grid(columnspan = 2)
+
+        # labels and entry fields for image files and results
+        self.imPath = tk.StringVar()
+        self.resultsPath = tk.StringVar()
+        self.imPath.set(self.SETTINGS["DATA_LOC"])
+        self.resultsPath.set(self.SETTINGS["RESULTS_LOC"])
+        self.imagePathLabel = tk.Label(self.saving, text = "Image Save Path: ")
+        self.imagePathEntry = tk.Entry(self.saving, textvariable = self.imPath)
+        self.resultsPathLabel = tk.Label(self.saving, text = "Results Save Path: ")
+        self.resultsPathEntry = tk.Entry(self.saving, textvariable = self.resultsPath)
+
+        # place widgets 
+        self.imagePathLabel.grid(row = 1, column = 0)
+        self.imagePathEntry.grid(row = 1, column = 1)
+        self.resultsPathLabel.grid(row = 2, column = 0)
+        self.resultsPathEntry.grid(row = 2, column = 1)
 
     def machineSettings(self): 
         """
@@ -138,27 +176,28 @@ class defaultsGUI(object):
         self.machineOnBtn.grid(sticky = "ew")
 
         # create widgets 
-        epochs = tk.StringVar()
-        batch = tk.StringVar()
-        train = tk.StringVar()
-        valid = tk.StringVar()
-        test = tk.StringVar()
-        epochs.set(self.EPOCHS)
-        batch.set(self.BATCH)
-        train.set(self.TRAIN)
-        valid.set(self.VALIDATE)
-        test.set(self.TEST)
+        self.epochs = tk.StringVar()
+        self.batch = tk.StringVar()
+        self.train = tk.StringVar()
+        self.valid = tk.StringVar()
+        self.test = tk.StringVar()
+        self.epochs.set(self.EPOCHS)
+        self.batch.set(self.BATCH)
+        self.train.set(self.TRAIN)
+        self.valid.set(self.VALIDATE)
+        self.test.set(self.TEST)
+
         self.description = tk.Label(self.machine, text = "CNN trained and tested on data using Adam optimiser.")
         self.epochLabel = tk.Label(self.machine, text = "Epochs")
-        self.epochEntry = tk.Entry(self.machine, textvariable = epochs, width = 5)
+        self.epochEntry = tk.Entry(self.machine, textvariable = self.epochs, width = 5)
         self.batchLabel = tk.Label(self.machine, text = "Batch Size")
-        self.batchEntry = tk.Entry(self.machine, textvariable = batch, width = 5)
+        self.batchEntry = tk.Entry(self.machine, textvariable = self.batch, width = 5)
         self.trainLabel = tk.Label(self.machine, text = "Train %")
         self.validLabel = tk.Label(self.machine, text = "Valid %")
         self.testLabel = tk.Label(self.machine, text = "Test %")
-        self.trainEntry = tk.Entry(self.machine, textvariable = train, width = 5)
-        self.validEntry = tk.Entry(self.machine, textvariable = valid, width = 5)
-        self.testEntry = tk.Entry(self.machine, textvariable = test, width = 5)
+        self.trainEntry = tk.Entry(self.machine, textvariable = self.train, width = 5)
+        self.validEntry = tk.Entry(self.machine, textvariable = self.valid, width = 5)
+        self.testEntry = tk.Entry(self.machine, textvariable = self.test, width = 5)
 
         # place widgets 
         self.description.grid(row = 0, column = 1, columnspan = 6)
@@ -197,11 +236,11 @@ class defaultsGUI(object):
         self.radioactiveSmearFrame = tk.LabelFrame(self.radioactivity, text = "Radioactive Beta Smearing")
 
         # create widgets 
-        stepSize = tk.StringVar()
-        stepSize.set(self.RADIOACTIVE_STEP_SIZE)
+        self.stepSize = tk.StringVar()
+        self.stepSize.set(self.RADIOACTIVE_STEP_SIZE)
         self.radioactiveSmearBtn = tk.Button(self.radioactiveSmearFrame, text = "ON", bg = "green", command = lambda: self.changeButtonState(self.radioactiveSmearFrame, self.radioactiveSmearBtn, "RADIOACTIVE_SMEAR"))
         self.radioactiveSmearLabel = tk.Label(self.radioactiveSmearFrame, text = "Step Size (cm):")
-        self.radioactiveSmearEntry = tk.Entry(self.radioactiveSmearFrame, textvariable = stepSize)
+        self.radioactiveSmearEntry = tk.Entry(self.radioactiveSmearFrame, textvariable = self.stepSize)
 
         # place widgets 
         self.radioactiveSmearFrame.grid(row = 1, column = 0, sticky = "ew")
@@ -219,24 +258,24 @@ class defaultsGUI(object):
         self.potassiumFrame = tk.LabelFrame(self.radioactivity, text = "Potassium-42")
 
         # entry string variables
-        arQ = tk.StringVar()
-        kQ = tk.StringVar()
-        arActiv = tk.StringVar()
-        kActiv = tk.StringVar()
-        kQ.set(self.POTASSIUM_Q_VALUE)
-        arQ.set(self.ARGON_Q_VALUE)
-        arActiv.set(self.ARGON_ACTIVITY)
-        kActiv.set(self.POTASSIUM_ACTIVITY)
+        self.arQ = tk.StringVar()
+        self.kQ = tk.StringVar()
+        self.arActiv = tk.StringVar()
+        self.kActiv = tk.StringVar()
+        self.kQ.set(self.POTASSIUM_Q_VALUE)
+        self.arQ.set(self.ARGON_Q_VALUE)
+        self.arActiv.set(self.ARGON_ACTIVITY)
+        self.kActiv.set(self.POTASSIUM_ACTIVITY)
 
         # argon Q-value fields
         self.arQLabel = tk.Label(self.argonFrame, text = "Q-Value (MeV)")
         self.arQBtn = tk.Button(self.argonFrame, text = "Edit?", command = lambda: self.setState(self.arQEntry))
-        self.arQEntry = tk.Entry(self.argonFrame, textvariable = arQ, state = "disabled")
+        self.arQEntry = tk.Entry(self.argonFrame, textvariable = self.arQ, state = "disabled")
 
         # potassium Q-value fields 
         self.kQLabel = tk.Label(self.potassiumFrame, text = "Q-Value (MeV)")
         self.kQBtn = tk.Button(self.potassiumFrame, text = "Edit?", command = lambda: self.setState(self.kQEntry))
-        self.kQEntry = tk.Entry(self.potassiumFrame, textvariable = kQ, state = "disabled")
+        self.kQEntry = tk.Entry(self.potassiumFrame, textvariable = self.kQ, state = "disabled")
 
         # checks to see if activity is independent variable 
         self.arActivLabel = tk.Label(self.argonFrame, text = "Activity (mod^-1 ms^-1)")
@@ -255,11 +294,11 @@ class defaultsGUI(object):
 
                 arActiv.set(self.parameterSpace)
                 self.arActivBtn = tk.Label(self.argonFrame, text = "INDIE VAR")
-                self.arActivEntry = tk.Entry(self.argonFrame, textvariable = arActiv, state = "disabled")
+                self.arActivEntry = tk.Entry(self.argonFrame, textvariable = self.arActiv, state = "disabled")
 
                 # handle potassium 
                 self.kActivBtn = tk.Button(self.potassiumFrame, text = "Edit?", command = lambda: self.setState(self.kActivEntry))
-                self.kActivEntry = tk.Entry(self.potassiumFrame, textvariable = kActiv, state = "disabled")
+                self.kActivEntry = tk.Entry(self.potassiumFrame, textvariable = self.kActiv, state = "disabled")
 
             if self.isoSelection.get() == "potassium":
                 # potassium activity has been set as the independent variable 
@@ -268,18 +307,18 @@ class defaultsGUI(object):
 
                 kActiv.set(self.parameterSpace)
                 self.kActivBtn = tk.Label(self.potassiumFrame, text = "INDIE VAR")
-                self.kActivEntry = tk.Entry(self.potassiumFrame, textvariable = kActiv, state = "disabled")
+                self.kActivEntry = tk.Entry(self.potassiumFrame, textvariable = self.kActiv, state = "disabled")
 
                 # handle argon 
                 self.arActivBtn = tk.Button(self.argonFrame, text = "Edit?", command = lambda: self.setState(self.arActivEntry))
-                self.arActivEntry = tk.Entry(self.argonFrame, textvariable = arActiv, state = "disabled")
+                self.arActivEntry = tk.Entry(self.argonFrame, textvariable = self.arActiv, state = "disabled")
 
         else: 
             # radioactivity isn't independent variable so allow activity to be specified
             self.arActivBtn = tk.Button(self.argonFrame, text = "Edit?", command = lambda: self.setState(self.arActivEntry))
-            self.arActivEntry = tk.Entry(self.argonFrame, textvariable = arActiv, state = "disabled")
+            self.arActivEntry = tk.Entry(self.argonFrame, textvariable = self.arActiv, state = "disabled")
             self.kActivBtn = tk.Button(self.potassiumFrame, text = "Edit?", command = lambda: self.setState(self.kActivEntry))
-            self.kActivEntry = tk.Entry(self.potassiumFrame, textvariable = kActiv, state = "disabled")
+            self.kActivEntry = tk.Entry(self.potassiumFrame, textvariable = self.kActiv, state = "disabled")
             
         # place frames
         self.argonFrame.grid(row = 2, column = 0)
@@ -321,6 +360,7 @@ class defaultsGUI(object):
         self.general.destroy()
         self.radioactivity.destroy()
         self.machine.destroy()
+        self.saving.destroy()
         self.navigation.destroy()
 
         # call method to re-create the variable selection window 
@@ -358,10 +398,10 @@ class defaultsGUI(object):
         self.lifeLabel = tk.Label(self.lifetime_frame, text = "Lifetime (ms)")
         self.lifeLabel.grid(row = 0, column = 1)
 
-        lifeVar = tk.StringVar()
-        lifeVar.set(self.LIFETIME)
+        self.lifeVar = tk.StringVar()
+        self.lifeVar.set(self.LIFETIME)
 
-        self.lifeEntry = tk.Entry(self.lifetime_frame, textvariable = lifeVar, state = "disabled", width = 10)
+        self.lifeEntry = tk.Entry(self.lifetime_frame, textvariable = self.lifeVar, state = "disabled", width = 10)
         self.lifeEntry.grid(row = 0, column = 3, sticky= "e")
 
         if self.parameter != "lifetime": 
@@ -374,7 +414,7 @@ class defaultsGUI(object):
             # lifetime cannot be switched off 
             self.lifetimeOnBtn["state"] = "disabled"
             self.LIFETIME = self.parameterSpace
-            lifeVar.set(self.LIFETIME)
+            self.lifeVar.set(self.LIFETIME)
 
             self.lifeInfo = tk.Label(self.lifetime_frame, text = "INDIE VAR") 
             self.lifeInfo.grid(row = 0, column = 2)
