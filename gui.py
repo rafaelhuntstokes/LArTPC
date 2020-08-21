@@ -83,7 +83,8 @@ class defaultsGUI(object):
 
     def changeButtonState(self, frame, Button, flag):
         """
-        Function changes a button text and colour when clicked, and switches associated Boolean value.
+        Function changes a button text and colour when clicked, switches associated Boolean value in self.SETTINGS, and will enable
+        or disable an entire frame of widgets depending on the button calling it.
         """
 
         # change colour, text and state 
@@ -120,9 +121,15 @@ class defaultsGUI(object):
             for child in frame.winfo_children():
                 if child.winfo_class() != "Labelframe":
                     child.configure(state = "normal")
+                    # stop entry widgets being enabled by default since we want them only to be editable 
+                    # when edit button is pressed 
+                    if child.winfo_class() == "Entry": 
+                        child.configure(state = "disabled")
                 else: 
                     for recursiveChild in child.winfo_children():
                         recursiveChild.configure(state = "normal")
+                        if recursiveChild.winfo_class() == "Entry": 
+                            recursiveChild.configure(state = "disabled")
                         # change colour and text of button in sub frame 
                         if recursiveChild.winfo_class() == "Button":
                             # make sure it's a toggle button
@@ -240,13 +247,17 @@ class defaultsGUI(object):
         self.stepSize.set(self.RADIOACTIVE_STEP_SIZE)
         self.radioactiveSmearBtn = tk.Button(self.radioactiveSmearFrame, text = "ON", bg = "green", command = lambda: self.changeButtonState(self.radioactiveSmearFrame, self.radioactiveSmearBtn, "RADIOACTIVE_SMEAR"))
         self.radioactiveSmearLabel = tk.Label(self.radioactiveSmearFrame, text = "Step Size (cm):")
-        self.radioactiveSmearEntry = tk.Entry(self.radioactiveSmearFrame, textvariable = self.stepSize)
+        self.radioactiveSmearEdit = tk.Button(self.radioactiveSmearFrame, text = "Edit?", command = lambda: self.setState(self.radioactiveSmearEntry))
+        self.radioactiveSmearEntry = tk.Entry(self.radioactiveSmearFrame, textvariable = self.stepSize, state = "disabled")
 
         # place widgets 
         self.radioactiveSmearFrame.grid(row = 1, column = 0, sticky = "ew")
         self.radioactiveSmearBtn.grid(row = 0, column = 0)
         self.radioactiveSmearLabel.grid(row = 0, column = 1)
-        self.radioactiveSmearEntry.grid(row = 0, column = 2)
+        self.radioactiveSmearEdit.grid(row = 0, column = 2)
+        self.radioactiveSmearEntry.grid(row = 0, column = 3)
+
+        self.radioactiveSmearFrame.columnconfigure(1, weight = 1)
 
     def setupRadioactiveIsotopes(self): 
         """
@@ -292,7 +303,7 @@ class defaultsGUI(object):
                 # grey out argon ON/OFF button since it must be on 
                 self.arOnBtn["state"] = "disabled"
 
-                arActiv.set(self.parameterSpace)
+                self.arActiv.set(self.parameterSpace)
                 self.arActivBtn = tk.Label(self.argonFrame, text = "INDIE VAR")
                 self.arActivEntry = tk.Entry(self.argonFrame, textvariable = self.arActiv, state = "disabled")
 
@@ -305,7 +316,7 @@ class defaultsGUI(object):
                 # grey out argon ON/OFF button since it must be on 
                 self.kOnBtn["state"] = "disabled"
 
-                kActiv.set(self.parameterSpace)
+                self.kActiv.set(self.parameterSpace)
                 self.kActivBtn = tk.Label(self.potassiumFrame, text = "INDIE VAR")
                 self.kActivEntry = tk.Entry(self.potassiumFrame, textvariable = self.kActiv, state = "disabled")
 
