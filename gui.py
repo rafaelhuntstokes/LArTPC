@@ -1,5 +1,5 @@
 import tkinter as tk 
-from tkinter import messagebox
+from tkinter import messagebox, filedialog
 import numpy as np 
 from PIL import ImageTk,Image
 
@@ -142,10 +142,12 @@ class defaultsGUI(object):
             if Button["text"] == "ON":
                 # enable save results 
                 self.resultsPathEntry["state"] = "normal"
+                self.resultsFileExplorerBtn["state"] = "normal"
                 self.resultsPath.set(self.SETTINGS["RESULTS_LOC"])
             else: 
                 # disable results path
                 self.resultsPath.set("NO ML RESULTS")
+                self.resultsFileExplorerBtn["state"] = "disabled"
                 self.resultsPathEntry["state"] = "disabled"
 
     def saveData(self):
@@ -167,12 +169,28 @@ class defaultsGUI(object):
         self.resultsPathLabel = tk.Label(self.saving, text = "Results Save Path: ")
         self.resultsPathEntry = tk.Entry(self.saving, textvariable = self.resultsPath)
 
+        # add button to open file explorer
+        self.dataFileExplorerBtn = tk.Button(self.saving, text = "Browse", command = lambda: self.openFileExplorer("DATA_LOC", self.imPath))
+        self.resultsFileExplorerBtn = tk.Button(self.saving, text = "Browse", command = lambda: self.openFileExplorer("RESULTS_LOC", self.resultsPath))
+
         # place widgets 
         self.imagePathLabel.grid(row = 1, column = 0)
         self.imagePathEntry.grid(row = 1, column = 1)
+        self.dataFileExplorerBtn.grid(row = 1, column = 2)
         self.resultsPathLabel.grid(row = 2, column = 0)
         self.resultsPathEntry.grid(row = 2, column = 1)
+        self.resultsFileExplorerBtn.grid(row = 2, column = 2)
 
+    def openFileExplorer(self, setting, entry):
+        """
+        Opens file explorer to select save location for generated images or ML results.
+        """
+
+        # open file dialogue and save the selected directory location in settings 
+        filename = filedialog.askdirectory() 
+        self.SETTINGS[setting] = filename 
+        entry.set(filename)
+        
     def machineSettings(self): 
         """
         Function populates the ML frame with settings widgets to allow control of learning rate, (+other settings?).
