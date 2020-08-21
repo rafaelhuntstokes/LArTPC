@@ -580,8 +580,16 @@ class defaultsGUI(object):
         seedBtn = tk.Button(self.general, text = "Define Seed", command = lambda: self.setState(seedEntry))
         seedBtn.grid(row = 0, column = 1)
 
-
-class OpenerGUI(defaultsGUI):
+class AnalysisWindow(object):
+    """
+    Class manages the analysis window, allowing users to select directories of pre-generated images and pass them to the ML 
+    network to output results.
+    """
+    
+    def setupAnalysis(self):
+        pass
+    
+class OpenerGUI(defaultsGUI, AnalysisWindow):
     
     def __init__(self):
         """
@@ -735,7 +743,7 @@ class OpenerGUI(defaultsGUI):
         Create a new window object allowing the selection of an existing dataset for analysis with ML. 
         """
 
-        pass 
+        pass
 
 # set up main window 
 window = tk.Tk() 
