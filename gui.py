@@ -11,27 +11,29 @@ class defaultsGUI(object):
         
         # setup simulation default values and variables 
         self.SEED                  = np.random.randint(0,100) 
-        self.DISTANCE              = 3.53   # m 
-        self.TRANSDIFF             = 7.2e-4 # m^2 s^-1 
-        self.LONGDIFF              = 12e-4  # m^2 s^-1
-        self.ELECTRONIC_NOISE      = 5      # std in ADC counts 
-        self.NUMBER_EVENTS         = 100    # number of events to simualate
-        self.LIFETIME              = 50     # micro seconds 
-        self.ARGON_Q_VALUE         = 0.6    # MeV
-        self.ARGON_ACTIVITY        = 10     # decays per module per ms
-        self.POTASSIUM_Q_VALUE     = 3.5    # MeV
-        self.POTASSIUM_ACTIVITY    = 1e-3   # decays per module per ms
-        self.RADIOACTIVE_STEP_SIZE = 0.5    # cm (?) step size for depositing radioactive energy along trajectories
-        self.EPOCHS                = 20     # default number of epochs to use in ML training 
-        self.BATCH                 = 32     # default batch size for ML training 
-        self.TRAIN                 = 0.6    # default % data used to train model 
-        self.VALIDATE              = 0.2    # default % data used to validate model 
-        self.TEST                  = 0.2    # default % data used to test model 
+        self.DISTANCE              = 3.53         # m 
+        self.TRANSDIFF             = 7.2e-4       # m^2 s^-1 
+        self.LONGDIFF              = 12e-4        # m^2 s^-1
+        self.ELECTRONIC_NOISE      = 5            # std in ADC counts 
+        self.NUMBER_EVENTS         = 100          # number of events to simualate
+        self.LIFETIME              = 50           # micro seconds 
+        self.ARGON_Q_VALUE         = 0.6          # MeV
+        self.ARGON_ACTIVITY        = 10           # decays per module per ms
+        self.POTASSIUM_Q_VALUE     = 3.5          # MeV
+        self.POTASSIUM_ACTIVITY    = 1e-3         # decays per module per ms
+        self.RADIOACTIVE_STEP_SIZE = 0.5          # cm (?) step size for depositing radioactive energy along trajectories
+        self.EPOCHS                = 20           # default number of epochs to use in ML training 
+        self.BATCH                 = 32           # default batch size for ML training 
+        self.TRAIN                 = 0.6          # default % data used to train model 
+        self.VALIDATE              = 0.2          # default % data used to validate model 
+        self.TEST                  = 0.2          # default % data used to test model 
+        self.DATA_LOC              = "./images"   # path to saved images 
+        self.RESULTS_LOC           = "./results"  # path to generated ML results
 
         # flag dict to determine which options to apply to sim 
         self.SETTINGS = {"MACHINE_LEARNING": True, "RADIOACTIVITY_MASTER": True, "RADIOACTIVE_SMEAR": True, "ISOTOPE_ARGON": True, 
                          "ISOTOPE_POTASSIUM": True, "TRANS_DIFFUSION": True, "LONG_DIFFUSION": True,
-                         "ELECTRONIC_NOISE": True, "LIFETIME": True, "DATA_LOC": "./images", "RESULTS_LOC": "./results"}
+                         "ELECTRONIC_NOISE": True, "LIFETIME": True}
 
         # delete all the current frame widgets 
         self.spaceFrame.destroy()
@@ -143,7 +145,7 @@ class defaultsGUI(object):
                 # enable save results 
                 self.resultsPathEntry["state"] = "normal"
                 self.resultsFileExplorerBtn["state"] = "normal"
-                self.resultsPath.set(self.SETTINGS["RESULTS_LOC"])
+                self.resultsPath.set(self.RESULTS_LOC)
             else: 
                 # disable results path
                 self.resultsPath.set("NO ML RESULTS")
@@ -162,8 +164,8 @@ class defaultsGUI(object):
         # labels and entry fields for image files and results
         self.imPath = tk.StringVar()
         self.resultsPath = tk.StringVar()
-        self.imPath.set(self.SETTINGS["DATA_LOC"])
-        self.resultsPath.set(self.SETTINGS["RESULTS_LOC"])
+        self.imPath.set(self.DATA_LOC)
+        self.resultsPath.set(self.RESULTS_LOC)
         self.imagePathLabel = tk.Label(self.saving, text = "Image Save Path: ")
         self.imagePathEntry = tk.Entry(self.saving, textvariable = self.imPath)
         self.resultsPathLabel = tk.Label(self.saving, text = "Results Save Path: ")
@@ -187,9 +189,14 @@ class defaultsGUI(object):
         """
 
         # open file dialogue and save the selected directory location in settings 
-        filename = filedialog.askdirectory() 
-        self.SETTINGS[setting] = filename 
-        entry.set(filename)
+        filename = filedialog.askdirectory()
+         
+        if setting == "DATA_LOC":
+            self.DATA_LOC = filename
+        else:
+            self.RESULTS_LOC = filename 
+
+        print("results: ", self.RESULTS_LOC, "data: ", self.DATA_LOC)
         
     def machineSettings(self): 
         """
