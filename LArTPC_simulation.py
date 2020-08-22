@@ -277,7 +277,7 @@ class simulation(radiation_package):
     radiological activity.
     """
 
-    def __init__(self, event, screen,lifetime, t_coef, d_coef):
+    def __init__(self, event, screen, lifetime, t_coef, d_coef):
         
         # load the neutrino event data produced by GEANT4 
         electron_data    = np.load('electron_data.npy')
@@ -457,7 +457,8 @@ class simulation(radiation_package):
         """
         Simple attenuation function to model electron attachement to electrongeative impurities in the LAr. Decaying exponential.
         """
-
+        print("Time Type: {}\nLifetime Type: {}".format(type(drift_time), type(self.lifetime)))
+        print("Lifetime: ", self.lifetime)
         return bunch_pop*exp(-drift_time/self.lifetime)
 
     def calc_intercept(self, location):

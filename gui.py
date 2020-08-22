@@ -1,25 +1,25 @@
+# GUI imports 
 import tkinter as tk 
 from tkinter import messagebox, filedialog
 import numpy as np 
 from PIL import ImageTk,Image
 
+# simulation imports 
+# import matplotlib.pyplot as plt 
+# import mpl_toolkits.mplot3d.axes3d as axes3d
+# from time import time
+# from math import exp, pi, cos, sin
+# from scipy.stats import binned_statistic_2d as hist 
+# from scipy.stats import multivariate_normal as gauss2D
+# from scipy.stats import norm
+# from scipy.stats import poisson
+# from scipy.stats import rv_continuous
+# from scipy.interpolate import interp1d as transform
+# import scipy.integrate as integrate
+# from skimage.filters import gaussian
+# import os
 
-import numpy as np 
-import matplotlib.pyplot as plt 
-import mpl_toolkits.mplot3d.axes3d as axes3d
-from time import time
-from math import exp, pi, cos, sin
-from scipy.stats import binned_statistic_2d as hist 
-from scipy.stats import multivariate_normal as gauss2D
-from scipy.stats import norm
-from scipy.stats import poisson
-from scipy.stats import rv_continuous
-from scipy.interpolate import interp1d as transform
-import scipy.integrate as integrate
-from skimage.filters import gaussian
-import os
-
-import LArTPC_simulation
+from LArTPC_simulation import simulation
 
 class defaultsGUI(object):
     """
@@ -421,7 +421,26 @@ class defaultsGUI(object):
         self.createData()
 
     def runSim(self):
-        pass
+        """
+        This function passes the various settings to the simulation class methods.
+        """
+        """
+        THIS IS TOTALLY FUCKED! 
+        """
+        # collect the user inputs 
+        self.NUMBER_EVENTS = self.number.get()
+        self.DISTANCE = self.distance.get() * 1000 
+        #self.LIFETIME = self.lifeVar.get()
+        self.TRANSDIFF = self.transdiff.get()
+        self.LONGDIFF = self.longdiff.get()
+        # run simulation for each element in parameter space
+        for i in self.parameterSpace:
+            if self.parameter == "lifetime":
+                x = simulation(self.NUMBER_EVENTS, self.DISTANCE, i, self.TRANSDIFF, self.LONGDIFF)
+            if self.parameter == "electronic":
+                x = simulation(self.NUMBER_EVENTS, self.DISTANCE, self.LIFETIME, self.TRANSDIFF, self.LONGDIFF)
+            if self.parameter == "radioactive": 
+                x = simulation(self.NUMBER_EVENTS, self.DISTANCE, self.LIFETIME, self.TRANSDIFF, self.LONGDIFF)
 
     def events(self):
         """
@@ -431,10 +450,10 @@ class defaultsGUI(object):
         self.eventsLabel = tk.Label(self.general, text = "Number of Events")
         self.eventsLabel.grid(row = 2, column = 0)
 
-        number = tk.IntVar()
-        number.set(self.NUMBER_EVENTS)
+        self.number = tk.IntVar()
+        self.number.set(self.NUMBER_EVENTS)
 
-        self.eventSlide = tk.Scale(self.general, variable = number, from_ = 50, to = 10000, orient = "horizontal", length = 150, resolution = 50)
+        self.eventSlide = tk.Scale(self.general, variable = self.number, from_ = 50, to = 10000, orient = "horizontal", length = 150, resolution = 50)
         self.eventSlide.grid(row = 2, column = 1, columnspan = 3)
 
     def lifetime(self):
@@ -452,7 +471,7 @@ class defaultsGUI(object):
         self.lifeLabel = tk.Label(self.lifetime_frame, text = "Lifetime (ms)")
         self.lifeLabel.grid(row = 0, column = 1)
 
-        self.lifeVar = tk.StringVar()
+        self.lifeVar = tk.DoubleVar()
         self.lifeVar.set(self.LIFETIME)
 
         self.lifeEntry = tk.Entry(self.lifetime_frame, textvariable = self.lifeVar, state = "disabled", width = 10)
@@ -530,10 +549,10 @@ class defaultsGUI(object):
         self.transDiffFrame.grid(row = 3, column = 0, columnspan = 3, sticky = "ew")
         
         # set textvariables used to track diffusion coeff values 
-        transdiff = tk.DoubleVar()
-        longdiff  = tk.DoubleVar()
-        transdiff.set(self.TRANSDIFF)
-        longdiff.set(self.LONGDIFF)
+        self.transdiff = tk.DoubleVar()
+        self.longdiff  = tk.DoubleVar()
+        self.transdiff.set(self.TRANSDIFF)
+        self.longdiff.set(self.LONGDIFF)
 
         # create the toggle buttons 
         self.longDiffBtn = tk.Button(self.longDiffFrame, text = "ON", bg = "green", command = lambda: self.changeButtonState(self.longDiffFrame, self.longDiffBtn, "LONG_DIFFUSION"))
@@ -547,8 +566,8 @@ class defaultsGUI(object):
         self.transLabel.grid(row = 0, column = 1, sticky = "ew")
         self.longLabel.grid(row = 0, column = 1, sticky = "ew")
 
-        self.transEntry = tk.Entry(self.transDiffFrame, textvariable = transdiff, state = "disabled", width = 10)
-        self.longEntry  = tk.Entry(self.longDiffFrame, textvariable = longdiff, state = "disabled", width = 10)
+        self.transEntry = tk.Entry(self.transDiffFrame, textvariable = self.transdiff, state = "disabled", width = 10)
+        self.longEntry  = tk.Entry(self.longDiffFrame, textvariable = self.longdiff, state = "disabled", width = 10)
         self.transEntry.grid(row = 0, column = 3, sticky = tk.E)
         self.longEntry.grid(row = 0, column = 3, sticky = tk.E)
 
@@ -574,10 +593,10 @@ class defaultsGUI(object):
         """
         Function places a slider to set drift distance to anode in GENERAL frame. 
         """ 
-        distance = tk.DoubleVar()
-        distance.set(self.DISTANCE)
+        self.distance = tk.DoubleVar()
+        self.distance.set(self.DISTANCE)
         
-        slider = tk.Scale(self.general, variable = distance, from_ = 0.01, to = 3.53, orient = "horizontal", resolution = 0.01, length = 150)
+        slider = tk.Scale(self.general, variable = self.distance, from_ = 0.01, to = 3.53, orient = "horizontal", resolution = 0.01, length = 150)
         
         label = tk.Label(self.general, text = "Drift Distance (m)")
         label.grid(row = 1, column = 0)
@@ -723,7 +742,7 @@ class AnalysisWindow(object):
         filename = filedialog.askdirectory()
         self.analysisPath.set(filename)
     
-class OpenerGUI(defaultsGUI, AnalysisWindow):
+class OpenerGUI(defaultsGUI, AnalysisWindow, simulation):
     
     def __init__(self):
         """
