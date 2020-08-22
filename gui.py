@@ -193,7 +193,7 @@ class defaultsGUI(object):
         
     def machineSettings(self): 
         """
-        Function populates the ML frame with settings widgets to allow control of learning rate, (+other settings?).
+        Function populates the ML frame with settings widgets to allow control of epochs, batch size and test/train split.
         """
         
         # button to turn ML settings on or OFF
@@ -587,7 +587,116 @@ class AnalysisWindow(object):
     """
     
     def setupAnalysis(self):
+        """
+        Function creates the analysis window, deleting initial screen widgets and repopulating with file browser and ML settings. 
+        """
+
+        # delete previous widgets 
+        self.question.destroy()
+        self.createBtn.destroy()
+        self.analyseBtn.destroy()
+
+        # create folder select, ML and navigation panels
+        self.path_frame = tk.LabelFrame(window, text = "Data")
+        self.ml_frame = tk.LabelFrame(window, text = "ML Settings")
+        self.navigate_frame = tk.LabelFrame(window, text = "Navigation")
+        
+        # place frames
+        self.path_frame.grid()
+        self.ml_frame.grid(sticky = "nsew")
+        self.navigate_frame.grid()
+
+        # create path selection widgets 
+        self.analysisPath = tk.StringVar()
+        self.resultsPath = tk.StringVar()
+        self.analysisPath.set("./")
+        self.resultsPath.set("./")
+        self.analysisText = tk.Label(self.path_frame, text = "Select folder containing image files:")
+        self.analysisEntry = tk.Entry(self.path_frame, textvariable = self.analysisPath, state = "disabled")
+        self.analysisBrowse = tk.Button(self.path_frame, text = "Browse", command = self.browsePath)
+        self.resultsText = tk.Label(self.path_frame, text = "Select folder to save Results:")
+        self.resultsEntry = tk.Entry(self.path_frame, textvariable = self.resultsPath, state = "disabled")
+        self.resultsBrowse = tk.Button(self.path_frame, text = "Browse", command = self.browsePath)
+
+        # place widgets 
+        self.analysisText.grid(row = 0, column = 0)
+        self.analysisEntry.grid(row = 0, column = 1)
+        self.analysisBrowse.grid(row = 0, column = 2)
+        self.resultsText.grid(row = 1, column = 0)
+        self.resultsEntry.grid(row = 1, column = 1)
+        self.resultsBrowse.grid(row = 1, column = 2)
+
+        # create ML settings widgets 
+        self.epochs = tk.StringVar()
+        self.batch = tk.StringVar()
+        self.train = tk.StringVar()
+        self.valid = tk.StringVar()
+        self.test = tk.StringVar()
+        self.epochs.set(20)
+        self.batch.set(32)
+        self.train.set(0.6)
+        self.valid.set(0.2)
+        self.test.set(0.2)
+
+        self.description = tk.Label(self.ml_frame, text = "CNN trained and tested on data using Adam optimiser.")
+        self.epochLabel = tk.Label(self.ml_frame, text = "Epochs")
+        self.epochEntry = tk.Entry(self.ml_frame, textvariable = self.epochs, width = 5)
+        self.batchLabel = tk.Label(self.ml_frame, text = "Batch Size")
+        self.batchEntry = tk.Entry(self.ml_frame, textvariable = self.batch, width = 5)
+        self.trainLabel = tk.Label(self.ml_frame, text = "Train %")
+        self.validLabel = tk.Label(self.ml_frame, text = "Valid %")
+        self.testLabel = tk.Label(self.ml_frame, text = "Test %")
+        self.trainEntry = tk.Entry(self.ml_frame, textvariable = self.train, width = 5)
+        self.validEntry = tk.Entry(self.ml_frame, textvariable = self.valid, width = 5)
+        self.testEntry = tk.Entry(self.ml_frame, textvariable = self.test, width = 5)
+
+        # place ML widgets 
+        self.description.grid(row = 0, column = 1, columnspan = 6)
+        self.epochLabel.grid(row = 1, column = 1)
+        self.epochEntry.grid(row = 1, column = 2)
+        self.batchLabel.grid(row = 2, column = 1)
+        self.batchEntry.grid(row = 2, column = 2)
+        self.trainLabel.grid(row = 3, column = 1)
+        self.trainEntry.grid(row = 3, column = 2)
+        self.validLabel.grid(row = 3, column = 3)
+        self.validEntry.grid(row = 3, column = 4)
+        self.testLabel.grid(row = 3, column = 5)
+        self.testEntry.grid(row = 3, column = 6)
+
+        # create and place navigation widgets 
+        self.backBtn = tk.Button(self.navigate_frame, text = "Back", command = self.analysis_back)
+        self.backBtn.grid(row = 0, column = 1, sticky = "nswe")
+
+        self.goBtn = tk.Button(self.navigate_frame, text = "Start", command = self.analysis_run)
+        self.goBtn.grid(row = 0, column = 2, sticky = "nswe")
+
+    def analysis_back(self):
+        """
+        Delete widgets and return to home screen 
+        """
+
+        # delete
+        self.path_frame.destroy()
+        self.ml_frame.destroy()
+        self.navigate_frame.destroy()
+
+        # recreate original window 
+        self.__init__()
+
+    def analysis_run(self):
+        """
+        Pass data selected to ML algorithm and save results.
+        """
+
         pass
+
+    def browsePath(self):
+        """
+        Opens file explorer to select folder containing data images. 
+        """
+
+        filename = filedialog.askdirectory()
+        self.analysisPath.set(filename)
     
 class OpenerGUI(defaultsGUI, AnalysisWindow):
     
@@ -743,7 +852,9 @@ class OpenerGUI(defaultsGUI, AnalysisWindow):
         Create a new window object allowing the selection of an existing dataset for analysis with ML. 
         """
 
-        pass
+        # create window using Analysis object
+        self.setupAnalysis()
+
 
 # set up main window 
 window = tk.Tk() 
