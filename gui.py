@@ -3,6 +3,24 @@ from tkinter import messagebox, filedialog
 import numpy as np 
 from PIL import ImageTk,Image
 
+
+import numpy as np 
+import matplotlib.pyplot as plt 
+import mpl_toolkits.mplot3d.axes3d as axes3d
+from time import time
+from math import exp, pi, cos, sin
+from scipy.stats import binned_statistic_2d as hist 
+from scipy.stats import multivariate_normal as gauss2D
+from scipy.stats import norm
+from scipy.stats import poisson
+from scipy.stats import rv_continuous
+from scipy.interpolate import interp1d as transform
+import scipy.integrate as integrate
+from skimage.filters import gaussian
+import os
+
+import LArTPC_simulation
+
 class defaultsGUI(object):
     """
     This class handles the window allowing user to set default values for dependent simulation parameters.

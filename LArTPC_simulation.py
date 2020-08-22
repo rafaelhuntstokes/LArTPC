@@ -512,11 +512,11 @@ class simulation(radiation_package):
 """
 This code stub calls the above simulation class to create TPC images for the first 2000 GEANT4 events (in electron_data.txt) for different lifetimes.
 """
-lifetimes = [2,4,6,8,10,15,20,25,30,35,40,45,50,60,70,80,90,100,200,300] #micro seconds 
-start = time()
-for i in lifetimes:
-    for j in range(1):
-        x = simulation(j,10,i, 7.4e-4,24e-4)
-        print('COMPLETED EVENT {} for rad {}'.format(j, i))
-end = time()
-print(end-start)
+# lifetimes = [2,4,6,8,10,15,20,25,30,35,40,45,50,60,70,80,90,100,200,300] #micro seconds 
+# start = time()
+# for i in lifetimes:
+#     for j in range(1):
+#         x = simulation(j,10,i, 7.4e-4,24e-4)
+#         print('COMPLETED EVENT {} for rad {}'.format(j, i))
+# end = time()
+# print(end-start)
