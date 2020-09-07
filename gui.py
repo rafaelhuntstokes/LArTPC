@@ -30,6 +30,8 @@ class defaultsGUI(object):
         # setup simulation default values and variables 
         self.SEED                  = np.random.randint(0,100) 
         self.DISTANCE              = 3.53         # m 
+        self.IE                    = 23.6e-6      # IE of argon in MeV
+        self.VELOCITY              = 1.6          # electron velocity in mm per micro second
         self.TRANSDIFF             = 7.2e-4       # m^2 s^-1 
         self.LONGDIFF              = 12e-4        # m^2 s^-1
         self.ELECTRONIC_NOISE      = 5            # std in ADC counts 
@@ -100,6 +102,27 @@ class defaultsGUI(object):
 
         # NAVIGATION FRAME 
         self.navButtons()         # confirm and back buttons 
+    
+    def runSim(self):
+        """
+        This function passes the various settings to the simulation class methods.
+        """
+       
+        # # collect the user inputs 
+        # self.NUMBER_EVENTS = self.number.get()
+        # self.DISTANCE = self.distance.get() * 1000 
+        # #self.LIFETIME = self.lifeVar.get()
+        # self.TRANSDIFF = self.transdiff.get()
+        # self.LONGDIFF = self.longdiff.get()
+        
+        # # run simulation for each element in parameter space
+        # for i in self.parameterSpace:
+        #     if self.parameter == "lifetime":
+        #         x = simulation(self.NUMBER_EVENTS, self.DISTANCE, i, self.TRANSDIFF, self.LONGDIFF)
+        #     if self.parameter == "electronic":
+        #         x = simulation(self.NUMBER_EVENTS, self.DISTANCE, self.LIFETIME, self.TRANSDIFF, self.LONGDIFF)
+        #     if self.parameter == "radioactive": 
+        #         x = simulation(self.NUMBER_EVENTS, self.DISTANCE, self.LIFETIME, self.TRANSDIFF, self.LONGDIFF)
 
     def changeButtonState(self, frame, Button, flag):
         """
@@ -419,28 +442,6 @@ class defaultsGUI(object):
 
         # call method to re-create the variable selection window 
         self.createData()
-
-    def runSim(self):
-        """
-        This function passes the various settings to the simulation class methods.
-        """
-        """
-        THIS IS TOTALLY FUCKED! 
-        """
-        # collect the user inputs 
-        self.NUMBER_EVENTS = self.number.get()
-        self.DISTANCE = self.distance.get() * 1000 
-        #self.LIFETIME = self.lifeVar.get()
-        self.TRANSDIFF = self.transdiff.get()
-        self.LONGDIFF = self.longdiff.get()
-        # run simulation for each element in parameter space
-        for i in self.parameterSpace:
-            if self.parameter == "lifetime":
-                x = simulation(self.NUMBER_EVENTS, self.DISTANCE, i, self.TRANSDIFF, self.LONGDIFF)
-            if self.parameter == "electronic":
-                x = simulation(self.NUMBER_EVENTS, self.DISTANCE, self.LIFETIME, self.TRANSDIFF, self.LONGDIFF)
-            if self.parameter == "radioactive": 
-                x = simulation(self.NUMBER_EVENTS, self.DISTANCE, self.LIFETIME, self.TRANSDIFF, self.LONGDIFF)
 
     def events(self):
         """
